@@ -4,7 +4,7 @@ class PlaylistController < ApplicationController
   def file
     @file = MediaFile.find(params[:id])
     # FIXME: set correct MIME type
-    response.headers['Content-Type'] = 'audio/x-mpegurl'
+    response.headers['Content-Type'] = 'audio/x-scpls'
     render :layout => false
   end
   
