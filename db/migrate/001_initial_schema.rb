@@ -8,7 +8,7 @@ class InitialSchema < ActiveRecord::Migration
       t.column "title", :string
       t.column "artist", :string
       t.column "size", :integer, :default => 0, :null => false
-      t.column "duration", :time, :default => Sat Jan 01 00:00:00 CET 2000, :null => false
+      t.column "duration", :time, :null => false
       t.column "bitrate", :integer, :default => 0, :null => false
       t.column "vbr", :boolean, :default => false, :null => false
     end
