@@ -27,11 +27,11 @@ class FileController < ApplicationController
   def stream
     if params[:id]
       file = MediaFile.find(params[:id])
-      send_file file.path, :type => 'audio/mpeg', :disposition => 'inline'
+      path = file.path
     elsif params[:r] && params[:p]
       repository = Repository.find(params[:r])
       path = File.join(repository.path, params[:p])
-      send_file path, :type => 'audio/mpeg', :disposition => 'inline'
     end
+    send_file file.path, :type => 'audio/mpeg', :disposition => 'inline'
   end
 end
