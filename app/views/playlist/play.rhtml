@@ -1,0 +1,3 @@
+<% current_user.playlist.media_files.each do |f| %>
+  <%= url_for :controller => 'file', :action => 'stream', :id => f.id, :only_path => false %>
+<% end %>

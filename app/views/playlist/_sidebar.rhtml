@@ -1,0 +1,20 @@
+<div id="playlist-sidebar">
+  <h2>Your playlist</h2>
+  <% if logged_in? %>
+    <% if current_user.playlist.media_files.size > 0 %>
+      <ol>
+        <% current_user.playlist.media_files.each do |f| %>
+          <li id="media-file-<%= f.id %>" class="<%= cycle('odd', 'even') %>">
+            <%= h(truncate(f.basename, 25)) %></li>
+        <% end %>
+      </ol>
+      <p><%= link_to 'Play!', :controller => 'playlist', :action => 'play' %></p>
+    <% else %>
+      <p><i>Your playlist is empty. Drag files on this box to fill your
+        playlist!</i></p>
+    <% end %>
+  <% else %>
+    <p><i>Please <%= link_to 'login', :controller => 'user', :action => 'login' %>
+      to manage your playlists.</i></p>
+  <% end %>
+</div>

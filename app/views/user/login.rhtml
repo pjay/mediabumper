@@ -1,0 +1,15 @@
+<h2>Login</h2>
+
+<%= start_form_tag %>
+<p><label for="login">Login</label><br />
+  <%= text_field_tag 'login' %>
+  <%= javascript_tag '$("login").focus()' %></p>
+
+<p><label for="password">Password</label><br />
+  <%= password_field_tag 'password' %></p>
+
+<p><label for="remember_me">Remember me:</label>
+  <%= check_box_tag 'remember_me' %></p>
+
+<p><%= submit_tag 'Log in' %></p>
+<%= end_form_tag %>

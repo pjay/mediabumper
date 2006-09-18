@@ -1,0 +1,4 @@
+<h2>Quick search</h2>
+<%= start_form_tag( { :controller => 'file', :action => 'search' }, :method => 'get')%>
+<p><%= text_field_tag :q, params[:q] %></p>
+<%= end_form_tag %>
