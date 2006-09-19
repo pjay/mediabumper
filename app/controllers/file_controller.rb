@@ -32,6 +32,6 @@ class FileController < ApplicationController
       repository = Repository.find(params[:r])
       path = File.join(repository.path, params[:p])
     end
-    send_file file.path, :type => 'audio/mpeg', :disposition => 'inline'
+    send_file path, :type => 'audio/mpeg', :disposition => 'inline'
   end
 end
