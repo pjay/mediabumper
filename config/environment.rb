@@ -59,3 +59,6 @@ end
 # Default date and time formats
 ActiveSupport::CoreExtensions::Time::Conversions::DATE_FORMATS.update(:default => '%Y-%m-%d %H:%M')
 ActiveSupport::CoreExtensions::Date::Conversions::DATE_FORMATS.update(:default => '%Y-%m-%d')
+
+# Custom configuration
+SEARCH_PAGINATION_SIZE = 50

@@ -5,7 +5,12 @@
 <% end %>
 
 <% if @files %>
-  <p>Found <%= @files.total_hits %> result(s) for <i><%= h params[:q] %></i></p>
+  <p>Found <%= @files.total_hits %> result(s) for <i><%= h params[:q] %></i>
+    <% if @search_pages.page_count > 1 %>
+      <br />Displaying results <%= @search_pages.current.first_item %> to <%= @search_pages.current.last_item %>
+      <span class="pagination-links"><%= pagination_links @search_pages, :name => 'p', :params => { 'q' => params[:q] } %></span>
+    <% end %>
+  </p>
   <ul class="search-results">
     <% @files.each do |f| %>
       <% current_path = '' %>

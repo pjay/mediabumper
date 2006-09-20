@@ -206,6 +206,10 @@ ul.search-results li {
   padding: 2px;
 }
 
+.pagination-links {
+  margin-left: 20px;
+}
+
 #playlist-sidebar ol {
   padding-left: 0;
   margin: 0 10px 10px;
