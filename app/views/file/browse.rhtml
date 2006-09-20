@@ -13,22 +13,23 @@
 
 <h2>Browsing <%= h @repository.name %> :: <%= h @relative_path %></h2>
 
-<p>
+<ul class="browse">
 <% if @relative_path %>
-  <%= link_to '^ go to parent', :r => @repository, :p => parent_dir(@relative_path) %><br />
+  <li><%= link_to '^ go to parent', :r => @repository, :p => parent_dir(@relative_path) %></li>
 <% end %>
 
 <% files_in(@repository, @relative_path).each do |f| %>
   <% path = @relative_path ? File.join(@repository.path, @relative_path, f) : File.join(@repository.path, f) %>
   <% if File.directory? path %>
-    <%= link_to h(f), :r => @repository, :p => @relative_path ? File.join(@relative_path, f) : f %><br />
+    <% item_html = link_to h(f), :r => @repository, :p => @relative_path ? File.join(@relative_path, f) : f %>
   <% elsif File.file?(path) && MediaFile::EXTENSIONS.include?(File.extname(path)) %>
     <% relative_path = @relative_path ? File.join(@relative_path, f) : f %>
-    <%= link_to h(f), :action => 'stream', :r => @repository, :p => relative_path %><br />
+    <% item_html = link_to h(f), :action => 'stream', :r => @repository, :p => relative_path %>
   <% else %>
-    <%= h f %><br />
+    <% item_html = h(f) %>
   <% end %>
+  <li class="<%= cycle('odd', 'even') %>"><%= item_html %></li>
 <% end %>
-</p>
+</ul>
 
 <% end %>
