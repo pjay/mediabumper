@@ -24,7 +24,12 @@
         <%= link_to(h(f.repository.name), :action => 'browse', :r => f.repository) %>
         <% f.split_relative_path.each do |e| %>
           <% current_path = current_path.empty? ? e : File.join(current_path, e) %>
-          / <%= link_to(h(e), :action => 'browse', :r => f.repository, :p => current_path) %>
+          /
+          <% if File.directory? File.join(f.repository.path, current_path) %>
+            <%= link_to(h(e), :action => 'browse', :r => f.repository, :p => current_path) %>
+          <% else %>
+            <%= h(e) %>
+          <% end %>
         <% end %></li>
     <% end %>
   </ul>
