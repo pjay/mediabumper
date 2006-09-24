@@ -28,6 +28,8 @@ class UserController < ApplicationController
       end
       redirect_back_or_default(:controller => 'user', :action => 'index')
       flash[:notice] = "Logged in successfully"
+    else
+      flash[:error] = "Bad login or password, please try again."
     end
   end
 
