@@ -6,4 +6,9 @@ class ApplicationController < ActionController::Base
   
   # If you want "remember me" functionality, add this before_filter to Application Controller
   before_filter :login_from_cookie
+  
+  def current_playlist
+    return unless current_user
+    current_user.playlist || Playlist.new
+  end
 end
