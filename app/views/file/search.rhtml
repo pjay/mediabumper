@@ -1,8 +1,6 @@
 <h2>Search</h2>
 
-<% if flash[:error] %>
-  <p class="error"><%= h flash[:error] %></p>
-<% end %>
+<%= render :partial => 'shared/flash_messages' %>
 
 <% if @files %>
   <p>Found <%= @files.total_hits %> result(s) for <i><%= h params[:q] %></i>

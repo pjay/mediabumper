@@ -14,13 +14,14 @@ class FileController < ApplicationController
       # Translate search query to FQL (see Ferret doc)
       query = params[:q].strip.split(/ +/).map { |term| term << '~.5' }.join ' '
       
-      # FIXME: upcoming release of acts_as_ferret will include a
-      #        MediaFile#total_hits method, use it when available
-      total_hits = MediaFile.ferret_index.search(query).total_hits
-      @search_pages = Paginator.new self, total_hits, SEARCH_PAGINATION_SIZE, params[:p]
-      
       begin
         # Catch syntax errors in FQL
+        
+        # FIXME: upcoming release of acts_as_ferret will include a
+        #        MediaFile#total_hits method, use it when available
+        total_hits = MediaFile.ferret_index.search(query).total_hits
+        @search_pages = Paginator.new self, total_hits, SEARCH_PAGINATION_SIZE, params[:p]
+        
         @files = MediaFile.find_by_contents query,
           :limit => @search_pages.items_per_page,
           :offset => @search_pages.current.offset
