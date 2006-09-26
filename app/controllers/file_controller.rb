@@ -33,7 +33,7 @@ class FileController < ApplicationController
   end
   
   def random
-    limit = params[:s] || session[:random_selection_size] || 20
+    limit = params[:s] || session[:random_selection_size] || '20'
     session[:random_selection_size] = limit
     @files = MediaFile.find(:all, :limit => limit, :order => 'RAND()')
   end
