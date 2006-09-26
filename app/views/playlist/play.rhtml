@@ -1,3 +1,8 @@
-<% current_user.playlist.media_files.each do |f| %>
-  <%= url_for :controller => 'file', :action => 'stream', :id => f.id, :only_path => false %>
-<% end %>
+[playlist]
+NumberOfEntries=<%= @files.size %>
+<% i = 0 -%>
+<% @files.each do |f| -%>
+File<%= i += 1 %>=<%= url_for :controller => 'file', :action => 'stream', :id => f.id, :only_path => false %>
+Title<%= i %>=<%= f.basename %>
+<% end -%>
+Version=2

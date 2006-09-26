@@ -9,6 +9,6 @@ class ApplicationController < ActionController::Base
   
   def current_playlist
     return unless current_user
-    current_user.playlist || Playlist.new
+    current_user.playlist ||= Playlist.new(:name => 'default')
   end
 end

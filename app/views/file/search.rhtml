@@ -19,7 +19,7 @@
         <% if logged_in? %>
         [<%= link_to_remote 'add to playlist',
                             :url => { :controller => 'playlist', :action => 'add',
-                                      :id => current_user.playlist.id, :file_id => f.id } %>]
+                                      :id => current_playlist.id, :file_id => f.id } %>]
         <% end %>
         <%= link_to(h(f.repository.name), :action => 'browse', :r => f.repository) %>
         <% f.split_relative_path.each do |e| %>
