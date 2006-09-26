@@ -1,0 +1,22 @@
+<ul class="search-results">
+  <% @files.each do |f| %>
+    <% current_path = '' %>
+    <li class="<%= cycle('odd', 'even') %>">
+      [<%= link_to_stream 'stream', f.id %>]
+      <% if logged_in? %>
+      [<%= link_to_remote 'add to playlist',
+                          :url => { :controller => 'playlist', :action => 'add',
+                                    :id => current_playlist.id, :file_id => f.id } %>]
+      <% end %>
+      <%= link_to(h(f.repository.name), :action => 'browse', :r => f.repository) %>
+      <% f.split_relative_path.each do |e| %>
+        <% current_path = current_path.empty? ? e : File.join(current_path, e) %>
+        /
+        <% if File.directory? File.join(f.repository.path, current_path) %>
+          <%= link_to(h(e), :action => 'browse', :r => f.repository, :p => current_path) %>
+        <% else %>
+          <%= h(e) %>
+        <% end %>
+      <% end %></li>
+  <% end %>
+</ul>

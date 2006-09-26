@@ -1,0 +1,10 @@
+<h2>Random selection</h2>
+
+<%= start_form_tag({}, :method => 'get') %>
+<p>Display
+  <%= select_tag 's', options_for_select(['10', '20', '50', '100'],
+                                         session[:random_selection_size]) %>
+  files <%= submit_tag 'refresh' %></p>
+<%= end_form_tag %>
+
+<%= render :partial => 'file/listing' %>
