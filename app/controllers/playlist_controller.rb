@@ -3,8 +3,7 @@ class PlaylistController < ApplicationController
   
   def file
     @files = [MediaFile.find(params[:id])]
-    response.headers['Content-Type'] = 'audio/x-scpls'
-    render :action => 'play', :layout => false
+    play
   end
   
   def add
@@ -26,8 +25,8 @@ class PlaylistController < ApplicationController
   end
   
   def play
-    @files = current_playlist.media_files
+    @files ||= current_playlist.media_files
     response.headers['Content-Type'] = 'audio/x-scpls'
-    render :layout => false
+    render :action => 'play', :layout => false
   end
 end
