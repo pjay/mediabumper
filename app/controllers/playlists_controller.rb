@@ -7,8 +7,8 @@ class PlaylistsController < ApplicationController
   end
   
   def add
-    respond_to do |wants|
-      wants.js do
+    respond_to do |format|
+      format.js do
         f = MediaFile.find(params[:file_id])
         max = PlaylistsItem.maximum(:position, :conditions => ['playlist_id = ?', current_playlist.id])
         pos = max.nil? ? 1 : max + 1
@@ -17,7 +17,7 @@ class PlaylistsController < ApplicationController
                              :position => pos)
         
         render :update do |page|
-          page.replace 'playlist-sidebar', :partial => 'playlist/sidebar'
+          page.replace 'playlist-sidebar', :partial => 'playlists/sidebar'
           page.visual_effect :highlight, "media-file-#{f.id}"
         end
       end
