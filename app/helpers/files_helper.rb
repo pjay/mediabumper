@@ -1,4 +1,4 @@
-module FileHelper
+module FilesHelper
   def files_in(repository, relative_path)
     path = repository.path
     if relative_path && !relative_path.empty?

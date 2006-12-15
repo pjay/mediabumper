@@ -1,4 +1,4 @@
-class FileController < ApplicationController
+class FilesController < ApplicationController
   def browse
     if params[:r]
       # FIXME: add path sanitization

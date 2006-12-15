@@ -15,8 +15,8 @@
 
 <div id="header">
 <p id="toplinks">Go to:
-  <%= link_to 'search', :controller => 'file', :action => 'search' %> |
-  <%= link_to 'browse', :controller => 'file', :action => 'browse' %> |
+  <%= link_to 'search', :controller => 'files', :action => 'search' %> |
+  <%= link_to 'browse', :controller => 'files', :action => 'browse' %> |
   <%= link_to 'your profile', :controller => 'user', :action => 'profile' %></p>
 <h1><%= link_to 'media<span class="fade">bumper</span>',
                 :controller => 'home', :action => 'index' %></h1>
@@ -29,9 +29,9 @@
 
 <div id="sidebar">
   <%= render :partial => 'user/sidebar' %>
-  <%= render :partial => 'file/quick_search' %>
+  <%= render :partial => 'files/quick_search' %>
   <%= render :partial => 'playlist/sidebar' %>
-  <%= render :partial => 'file/random' %>
+  <%= render :partial => 'files/random' %>
 </div>
 
 <div id="footer">
