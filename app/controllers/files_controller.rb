@@ -42,10 +42,15 @@ class FilesController < ApplicationController
     if params[:id]
       file = MediaFile.find(params[:id])
       path = file.path
+      
+      if logged_in?
+        Playback.create :user => current_user, :media_file => file
+      end
     elsif params[:r] && params[:p]
       repository = Repository.find(params[:r])
       path = File.join(repository.path, params[:p])
     end
+    
     send_file path, :type => 'audio/mpeg', :disposition => 'inline'
   end
 end
