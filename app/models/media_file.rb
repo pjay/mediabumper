@@ -9,9 +9,12 @@ class MediaFile < ActiveRecord::Base
     def index(path, repository)
       if self::EXTENSIONS.include? File.extname(path)
         relative_path = path.sub /^#{repository.path}#{File::SEPARATOR}/, ''
-        mf = find_or_create_by_relative_path_and_repository_id(relative_path, repository.id)
-        mf.size = File.size(path)
-        mf.save
+        mf = find_by_relative_path_and_repository_id(relative_path, repository.id)
+        unless mf
+          MediaFile.create :relative_path => relative_path,
+            :repository_id => repository.id, :size => File.size(path),
+            :bitrate => 0, :duration => 0
+        end
       end
     end
     

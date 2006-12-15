@@ -18,7 +18,7 @@ namespace :mediabumper do
             end
           end
         rescue Exception => e
-          puts "WARNING: #{e.message}"
+          puts "ERROR: #{e.message}"
         end
       end
     end
