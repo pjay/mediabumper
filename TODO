@@ -1,0 +1,4 @@
+* Create an interface to display/analyze playbacks history
+* Flagging/rating of files
+* ID3 tags parsing
+* Add last_login_at attribute to users
