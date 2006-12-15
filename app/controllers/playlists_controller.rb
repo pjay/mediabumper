@@ -25,7 +25,7 @@ class PlaylistsController < ApplicationController
   end
   
   def play
-    @files ||= current_playlist.media_files
+    @files ||= Playlist.find(params[:id]).media_files
     response.headers['Content-Type'] = 'audio/x-scpls'
     render :action => 'play', :layout => false
   end

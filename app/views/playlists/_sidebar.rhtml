@@ -8,7 +8,7 @@
             <%= h(truncate(f.basename, 25)) %></li>
         <% end %>
       </ol>
-      <p><%= link_to 'Play!', :controller => 'playlists', :action => 'play' %></p>
+      <p><%= link_to 'Play!', :controller => 'playlists', :action => 'play', :id => current_user.playlist.id %></p>
     <% else %>
       <p><i>Your current playlist is empty. Drag files on this box to fill your
         playlist!</i></p>
