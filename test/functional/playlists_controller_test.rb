@@ -1,12 +1,12 @@
 require File.dirname(__FILE__) + '/../test_helper'
-require 'playlist_controller'
+require 'playlists_controller'
 
 # Re-raise errors caught by the controller.
-class PlaylistController; def rescue_action(e) raise e end; end
+class PlaylistsController; def rescue_action(e) raise e end; end
 
-class PlaylistControllerTest < Test::Unit::TestCase
+class PlaylistsControllerTest < Test::Unit::TestCase
   def setup
-    @controller = PlaylistController.new
+    @controller = PlaylistsController.new
     @request    = ActionController::TestRequest.new
     @response   = ActionController::TestResponse.new
   end

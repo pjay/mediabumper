@@ -5,7 +5,7 @@
       [<%= link_to_stream 'stream', f.id %>]
       <% if logged_in? %>
       [<%= link_to_remote 'add to playlist',
-                          :url => { :controller => 'playlist', :action => 'add',
+                          :url => { :controller => 'playlists', :action => 'add',
                                     :id => current_playlist.id, :file_id => f.id } %>]
       <% end %>
       <%= link_to(h(f.repository.name), :action => 'browse', :r => f.repository) %>

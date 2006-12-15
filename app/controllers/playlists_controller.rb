@@ -1,4 +1,4 @@
-class PlaylistController < ApplicationController
+class PlaylistsController < ApplicationController
   before_filter :login_required, :except => :file
   
   def file
