@@ -22,5 +22,10 @@ namespace :mediabumper do
         end
       end
     end
+    
+    # FIXME: there should be a faster way :)
+    MediaFile.find(:all).each do |mf|
+      mf.destroy unless File.exists? mf.path
+    end
   end
 end
