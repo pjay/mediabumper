@@ -1,4 +1,4 @@
-class AddPlaybacks < ActiveRecord::Migration
+class CreatePlaybacks < ActiveRecord::Migration
   def self.up
     create_table :playbacks do |t|
       t.column :user_id, :integer, :null => false
