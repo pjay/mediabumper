@@ -1,0 +1,5 @@
+<h2><%= h @album.name %>, by <%= h @album.artist.name %></h2>
+
+<p><%= link_to_stream "Play this album!", @album %></p>
+
+<%= render :partial => "files/listing" %>

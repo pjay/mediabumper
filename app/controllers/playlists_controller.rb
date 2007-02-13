@@ -1,8 +1,13 @@
 class PlaylistsController < ApplicationController
-  before_filter :login_required, :except => :file
+  before_filter :login_required, :only => [:add]
   
-  def file
+  def media_file
     @files = [MediaFile.find(params[:id])]
+    play
+  end
+  
+  def album
+    @files = Album.find(params[:id]).songs.map { |s| s.media_file }
     play
   end
   
