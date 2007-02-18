@@ -60,11 +60,11 @@ class MediaFile < ActiveRecord::Base
   
   private  
     def artist_name
-      song && song.artist.name
+      artist && artist.name
     end
     
     def album_name
-      song && song.album.name
+      album && album.name
     end
     
     def song_name
