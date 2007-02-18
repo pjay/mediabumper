@@ -1,7 +1,7 @@
 # Be sure to restart your web server when you modify this file.
 
 require 'rubygems'
-require_gem 'ferret', '= 0.10.4'
+require_gem 'ferret', '= 0.10.14'
 
 # Uncomment below to force Rails into production mode when 
 # you don't control web/app server and can't set it the proper way
@@ -9,7 +9,7 @@ require_gem 'ferret', '= 0.10.4'
 ENV['RAILS_ENV'] ||= 'development'
 
 # Specifies gem version of Rails to use when vendor/rails is not present
-RAILS_GEM_VERSION = '1.1.6'
+#RAILS_GEM_VERSION = '1.1.6'
 
 # Bootstrap the Rails environment, frameworks, and default configuration
 require File.join(File.dirname(__FILE__), 'boot')
