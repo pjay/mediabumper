@@ -49,7 +49,15 @@ class MediaFile < ActiveRecord::Base
   def extname
     File.extname(relative_path)[1..-1]
   end
-
+  
+  def artist
+    song && song.artist
+  end
+  
+  def album
+    song && song.album
+  end
+  
   private  
     def artist_name
       song && song.artist.name
