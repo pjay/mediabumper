@@ -1,5 +1,5 @@
 class MediaFile < ActiveRecord::Base
-  acts_as_ferret({ :fields => [:relative_path, :artist, :album, :song] },
+  acts_as_ferret({ :fields => [:relative_path, :artist_name, :album_name, :song_name] },
                  { :analyzer => Ferret::Analysis::LetterAnalyzer.new })
   
   belongs_to :repository
@@ -49,12 +49,17 @@ class MediaFile < ActiveRecord::Base
   def extname
     File.extname(relative_path)[1..-1]
   end
-  
-  def artist
-    song && song.artist
-  end
-  
-  def album
-    song && song.album
-  end
+
+  private  
+    def artist_name
+      song && song.artist.name
+    end
+    
+    def album_name
+      song && song.album.name
+    end
+    
+    def song_name
+      song && song.name
+    end
 end
