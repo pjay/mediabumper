@@ -20,7 +20,6 @@ module Mediabumper
               end
             rescue Exception => e
               puts "ERROR: #{e.message}"
-              raise e
             end
           end
         end
