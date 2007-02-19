@@ -8,3 +8,6 @@
 * Use track numbers for albums
 * Create an artists controller
 * Stream search results and random selections
+* Integration of a flash mp3 player to mediabumper
+* possibility to play recursively a folder or a random selection
+* possibility to clear the playlist
