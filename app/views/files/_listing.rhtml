@@ -3,12 +3,12 @@
     <% current_path = '' %>
     <li class="<%= cycle('odd', 'even') %>">
       <span class="controls">
-        <%= link_to_stream 'stream', f %>
         <% if logged_in? %>
           | <%= link_to_remote 'add to playlist',
                                :url => { :controller => 'playlists', :action => 'add',
                                          :id => current_playlist.id, :file_id => f.id } %>
         <% end %>
+        <%= inline_player :song_url => url_for_stream(f) %>
       </span>
       <strong><%= h(f.song && f.song.name || f.basename) %></strong><% if f.artist %>, by <%= link_to h(f.artist.name) %><% end %>
       <% if f.album %>(album: <%= link_to h(f.album.name), album_path(f.album) %>)<% end %><br />
