@@ -67,8 +67,8 @@ class AssociationsTest < Test::Unit::TestCase
 end
 
 class AssociationProxyTest < Test::Unit::TestCase
-  fixtures :authors, :posts
-  
+  fixtures :authors, :posts, :developers, :projects, :developers_projects
+
   def test_proxy_accessors
     welcome = posts(:welcome)
     assert_equal  welcome, welcome.author.proxy_owner
@@ -86,6 +86,14 @@ class AssociationProxyTest < Test::Unit::TestCase
     assert_equal  david.class.reflect_on_association(:posts_with_extension), david.posts_with_extension.testing_proxy_reflection
     david.posts_with_extension.first   # force load target
     assert_equal  david.posts_with_extension, david.posts_with_extension.testing_proxy_target
+  end
+
+  def test_save_on_parent_does_not_load_target
+    david = developers(:david)
+
+    assert !david.projects.loaded?
+    david.update_attribute(:created_at, Time.now)
+    assert !david.projects.loaded?
   end
 end
 
@@ -1007,7 +1015,20 @@ class BelongsToAssociationsTest < Test::Unit::TestCase
     citibank.firm = apple
     assert_equal apple.id, citibank.firm_id
   end
-  
+
+  def test_no_unexpected_aliasing
+    first_firm = companies(:first_firm)
+    another_firm = companies(:another_firm)
+
+    citibank = Account.create("credit_limit" => 10)
+    citibank.firm = first_firm
+    original_proxy = citibank.firm
+    citibank.firm = another_firm
+
+    assert_equal first_firm.object_id, original_proxy.object_id
+    assert_equal another_firm.object_id, citibank.firm.object_id
+  end
+
   def test_creating_the_belonging_object
     citibank = Account.create("credit_limit" => 10)
     apple    = citibank.create_firm("name" => "Apple")

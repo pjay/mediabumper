@@ -20,7 +20,13 @@ module ActiveRecord
       super("Cannot have a has_many :through association '#{owner_class_name}##{reflection.name}' on the polymorphic object '#{source_reflection.class_name}##{source_reflection.name}'.")
     end
   end
-
+  
+  class HasManyThroughAssociationPointlessSourceTypeError < ActiveRecordError #:nodoc:
+    def initialize(owner_class_name, reflection, source_reflection)
+      super("Cannot have a has_many :through association '#{owner_class_name}##{reflection.name}' with a :source_type option if the '#{reflection.through_reflection.class_name}##{source_reflection.name}' is not polymorphic.  Try removing :source_type on your association.")
+    end
+  end
+  
   class HasManyThroughSourceAssociationNotFoundError < ActiveRecordError #:nodoc:
     def initialize(reflection)
       through_reflection      = reflection.through_reflection
@@ -30,7 +36,7 @@ module ActiveRecord
     end
   end
 
-  class HasManyThroughSourceAssociationMacroError < ActiveRecordError #:nodoc
+  class HasManyThroughSourceAssociationMacroError < ActiveRecordError #:nodoc:
     def initialize(reflection)
       through_reflection = reflection.through_reflection
       source_reflection  = reflection.source_reflection
@@ -346,7 +352,15 @@ module ActiveRecord
     #   for post in Post.find(:all, :include => [ :author, :comments ])
     #
     # That'll add another join along the lines of: LEFT OUTER JOIN comments ON comments.post_id = posts.id. And we'll be down to 1 query.
-    # But that shouldn't fool you to think that you can pull out huge amounts of data with no performance penalty just because you've reduced
+    #
+    # To include a deep hierarchy of associations, using a hash:
+    #
+    #   for post in Post.find(:all, :include => [ :author, { :comments => { :author => :gravatar } } ])
+    #
+    # That'll grab not only all the comments but all their authors and gravatar pictures.  You can mix and match
+    # symbols, arrays and hashes in any combination to describe the associations you want to load.
+    #
+    # All of this power shouldn't fool you into thinking that you can pull out huge amounts of data with no performance penalty just because you've reduced
     # the number of queries. The database still needs to send all the data to Active Record and it still needs to be processed. So it's no
     # catch-all for performance problems, but it's a great way to cut down on the number of queries in a situation as the one described above.
     # 
@@ -529,6 +543,8 @@ module ActiveRecord
       # * <tt>:source</tt>: Specifies the source association name used by <tt>has_many :through</tt> queries.  Only use it if the name cannot be 
       #   inferred from the association.  <tt>has_many :subscribers, :through => :subscriptions</tt> will look for either +:subscribers+ or
       #   +:subscriber+ on +Subscription+, unless a +:source+ is given.
+      # * <tt>:source_type</tt>: Specifies type of the source association used by <tt>has_many :through</tt> queries where the source association
+      #   is a polymorphic belongs_to.
       # * <tt>:uniq</tt> - if set to true, duplicates will be omitted from the collection. Useful in conjunction with :through.
       #
       # Option examples:
@@ -726,6 +742,7 @@ module ActiveRecord
           deprecated_association_comparison_method(reflection.name, reflection.class_name)
         end
 
+        # Create the callbacks to update counter cache
         if options[:counter_cache]
           cache_column = options[:counter_cache] == true ?
             "#{self.to_s.underscore.pluralize}_count" :
@@ -745,7 +762,13 @@ module ActiveRecord
 
       # Associates two classes via an intermediate join table.  Unless the join table is explicitly specified as
       # an option, it is guessed using the lexical order of the class names. So a join between Developer and Project
-      # will give the default join table name of "developers_projects" because "D" outranks "P".
+      # will give the default join table name of "developers_projects" because "D" outranks "P".  Note that this precedence
+      # is calculated using the <tt><</tt> operator for <tt>String</tt>.  This means that if the strings are of different lengths, 
+      # and the strings are equal when compared up to the shortest length, then the longer string is considered of higher
+      # lexical precedence than the shorter one.  For example, one would expect the tables <tt>paper_boxes</tt> and <tt>papers</tt> 
+      # to generate a join table name of <tt>papers_paper_boxes</tt> because of the length of the name <tt>paper_boxes</tt>,
+      # but it in fact generates a join table name of <tt>paper_boxes_papers</tt>.  Be aware of this caveat, and use the 
+      # custom <tt>join_table</tt> option if you need to.
       #
       # Deprecated: Any additional fields added to the join table will be placed as attributes when pulling records out through
       # has_and_belongs_to_many associations. Records returned from join tables with additional attributes will be marked as
@@ -857,6 +880,12 @@ module ActiveRecord
       end
 
       private
+        # Generate a join table name from two provided tables names.
+        # The order of names in join name is determined by lexical precedence.
+        #   join_table_name("members", "clubs")
+        #   => "clubs_members"
+        #   join_table_name("members", "special_clubs")
+        #   => "members_special_clubs"
         def join_table_name(first_table_name, second_table_name)
           if first_table_name < second_table_name
             join_table = "#{first_table_name}_#{second_table_name}"
@@ -866,7 +895,7 @@ module ActiveRecord
 
           table_name_prefix + join_table + table_name_suffix
         end
-        
+      
         def association_accessor_methods(reflection, association_proxy_class)
           define_method(reflection.name) do |*params|
             force_reload = params.first unless params.empty?
@@ -887,7 +916,7 @@ module ActiveRecord
 
           define_method("#{reflection.name}=") do |new_value|
             association = instance_variable_get("@#{reflection.name}")
-            if association.nil?
+            if association.nil? || association.target != new_value
               association = association_proxy_class.new(self, reflection)
             end
 
@@ -897,10 +926,7 @@ module ActiveRecord
               instance_variable_set("@#{reflection.name}", association)
             else
               instance_variable_set("@#{reflection.name}", nil)
-              return nil
             end
-
-            association
           end
 
           define_method("set_#{reflection.name}_target") do |target|
@@ -947,10 +973,6 @@ module ActiveRecord
           end
         end
 
-        def require_association_class(class_name)
-          require_association(Inflector.underscore(class_name)) if class_name
-        end
-
         def add_multiple_associated_save_callbacks(association_name)
           method_name = "validate_associated_records_for_#{association_name}".to_sym
           define_method(method_name) do
@@ -971,8 +993,8 @@ module ActiveRecord
 
           after_callback = <<-end_eval
             association = instance_variable_get("@#{association_name}")
-            
-            if association.respond_to?(:loaded?)
+
+            if association.respond_to?(:loaded?) && association.loaded?
               if @new_record_before_save
                 records_to_save = association
               else
@@ -982,7 +1004,7 @@ module ActiveRecord
               association.send(:construct_sql)   # reconstruct the SQL queries now that we know the owner's id
             end
           end_eval
-                
+
           # Doesn't use after_save as that would save associations added in after_create/after_update twice
           after_create(after_callback)
           after_update(after_callback)
@@ -1085,7 +1107,7 @@ module ActiveRecord
             :class_name, :table_name, :foreign_key,
             :exclusively_dependent, :dependent,
             :select, :conditions, :include, :order, :group, :limit, :offset,
-            :as, :through, :source,
+            :as, :through, :source, :source_type,
             :uniq,
             :finder_sql, :counter_sql, 
             :before_add, :after_add, :before_remove, :after_remove, 
@@ -1209,7 +1231,13 @@ module ActiveRecord
           end
 
           add_conditions!(sql, options[:conditions], scope)
-          sql << "ORDER BY #{options[:order]} " if options[:order]
+          if options[:order]
+            if is_distinct
+              connection.add_order_by_for_association_limiting!(sql, options)
+            else
+              sql << "ORDER BY #{options[:order]}"
+            end
+          end
           add_limit!(sql, options, scope)
           return sanitize_sql(sql)
         end
@@ -1483,57 +1511,65 @@ module ActiveRecord
                   case
                     when reflection.macro == :has_many && reflection.options[:through]
                       through_conditions = through_reflection.options[:conditions] ? "AND #{interpolate_sql(sanitize_sql(through_reflection.options[:conditions]))}" : ''
-                      if through_reflection.options[:as] # has_many :through against a polymorphic join
-                        polymorphic_foreign_key  = through_reflection.options[:as].to_s + '_id'
-                        polymorphic_foreign_type = through_reflection.options[:as].to_s + '_type'
 
-                        " LEFT OUTER JOIN %s ON (%s.%s = %s.%s AND %s.%s = %s) "  % [
-                          table_alias_for(through_reflection.klass.table_name, aliased_join_table_name),
-                          aliased_join_table_name, polymorphic_foreign_key,
-                          parent.aliased_table_name, parent.primary_key,
-                          aliased_join_table_name, polymorphic_foreign_type, klass.quote_value(parent.active_record.base_class.name)] +
-                        " LEFT OUTER JOIN %s ON %s.%s = %s.%s " % [table_name_and_alias,
-                          aliased_table_name, primary_key, aliased_join_table_name, options[:foreign_key] || reflection.klass.to_s.classify.foreign_key
+                      jt_foreign_key = jt_as_extra = jt_source_extra = jt_sti_extra = nil
+                      first_key = second_key = as_extra = nil
+                      
+                      if through_reflection.options[:as] # has_many :through against a polymorphic join
+                        jt_foreign_key = through_reflection.options[:as].to_s + '_id'
+                        jt_as_extra = " AND %s.%s = %s" % [
+                            aliased_join_table_name, reflection.active_record.connection.quote_column_name(through_reflection.options[:as].to_s + '_type'), 
+                            klass.quote_value(parent.active_record.base_class.name)
                         ]
                       else
-                        if source_reflection.macro == :has_many && source_reflection.options[:as]
-                          " LEFT OUTER JOIN %s ON %s.%s = %s.%s "  % [
-                            table_alias_for(through_reflection.klass.table_name, aliased_join_table_name), aliased_join_table_name,
-                            through_reflection.primary_key_name,
-                            parent.aliased_table_name, parent.primary_key] +
-                          " LEFT OUTER JOIN %s ON %s.%s = %s.%s AND %s.%s = %s " % [
-                            table_name_and_alias,
-                            aliased_table_name, "#{source_reflection.options[:as]}_id", 
-                            aliased_join_table_name, options[:foreign_key] || primary_key,
-                            aliased_table_name, "#{source_reflection.options[:as]}_type", 
+                        jt_foreign_key = through_reflection.primary_key_name
+                      end
+                      
+                      case source_reflection.macro
+                      when :has_many
+                        if source_reflection.options[:as]
+                          first_key   = "#{source_reflection.options[:as]}_id"
+                          second_key  = options[:foreign_key] || primary_key
+                          as_extra    = " AND %s.%s = %s" % [
+                            aliased_table_name, reflection.active_record.connection.quote_column_name("#{source_reflection.options[:as]}_type"), 
                             klass.quote_value(source_reflection.active_record.base_class.name)
                           ]
                         else
-                          case source_reflection.macro
-                            when :belongs_to
-                              first_key  = primary_key
-                              second_key = source_reflection.options[:foreign_key] || klass.to_s.classify.foreign_key
-                              extra      = nil
-                            when :has_many
-                              first_key  = through_reflection.klass.base_class.to_s.classify.foreign_key
-                              second_key = options[:foreign_key] || primary_key
-                              extra      = through_reflection.klass.descends_from_active_record? ? nil :
-                                " AND %s.%s = %s" % [
-                                  aliased_join_table_name,
-                                  reflection.active_record.connection.quote_column_name(through_reflection.active_record.inheritance_column),
-                                  through_reflection.klass.quote_value(through_reflection.klass.name.demodulize)]
-                          end
-                          " LEFT OUTER JOIN %s ON (%s.%s = %s.%s%s) "  % [
-                            table_alias_for(through_reflection.klass.table_name, aliased_join_table_name), 
-                            aliased_join_table_name, through_reflection.primary_key_name,
-                            parent.aliased_table_name, parent.primary_key, extra] +
-                          " LEFT OUTER JOIN %s ON (%s.%s = %s.%s) " % [
-                            table_name_and_alias,
-                            aliased_table_name, first_key, 
-                            aliased_join_table_name, second_key
+                          first_key   = through_reflection.klass.base_class.to_s.classify.foreign_key
+                          second_key  = options[:foreign_key] || primary_key
+                        end
+                        
+                        unless through_reflection.klass.descends_from_active_record?
+                          jt_sti_extra = " AND %s.%s = %s" % [
+                            aliased_join_table_name,
+                            reflection.active_record.connection.quote_column_name(through_reflection.active_record.inheritance_column),
+                            through_reflection.klass.quote_value(through_reflection.klass.name.demodulize)]
+                        end
+                      when :belongs_to
+                        first_key = primary_key
+                        if reflection.options[:source_type]
+                          second_key = source_reflection.association_foreign_key
+                          jt_source_extra = " AND %s.%s = %s" % [
+                              aliased_join_table_name, reflection.active_record.connection.quote_column_name(reflection.source_reflection.options[:foreign_type]),
+                              klass.quote_value(reflection.options[:source_type])
                           ]
+                        else
+                          second_key = source_reflection.options[:foreign_key] || klass.to_s.classify.foreign_key
                         end
                       end
+                      
+                      " LEFT OUTER JOIN %s ON (%s.%s = %s.%s%s%s%s) " % [
+                        table_alias_for(through_reflection.klass.table_name, aliased_join_table_name),
+                        parent.aliased_table_name, reflection.active_record.connection.quote_column_name(parent.primary_key),
+                        aliased_join_table_name, reflection.active_record.connection.quote_column_name(jt_foreign_key), 
+                        jt_as_extra, jt_source_extra, jt_sti_extra
+                      ] +
+                      " LEFT OUTER JOIN %s ON (%s.%s = %s.%s%s) " % [
+                        table_name_and_alias, 
+                        aliased_table_name, reflection.active_record.connection.quote_column_name(first_key),
+                        aliased_join_table_name, reflection.active_record.connection.quote_column_name(second_key),
+                        as_extra
+                      ]
                     
                     when reflection.macro == :has_many && reflection.options[:as]
                       " LEFT OUTER JOIN %s ON %s.%s = %s.%s AND %s.%s = %s" % [
@@ -1569,7 +1605,7 @@ module ActiveRecord
               end || ''
               join << %(AND %s.%s = %s ) % [
                 aliased_table_name, 
-                reflection.active_record.connection.quote_column_name(reflection.active_record.inheritance_column), 
+                reflection.active_record.connection.quote_column_name(klass.inheritance_column), 
                 klass.quote_value(klass.name.demodulize)] unless klass.descends_from_active_record?
 
               [through_reflection, reflection].each do |ref|
@@ -1580,6 +1616,7 @@ module ActiveRecord
             end
             
             protected
+
               def pluralize(table_name)
                 ActiveRecord::Base.pluralize_table_names ? table_name.to_s.pluralize : table_name
               end

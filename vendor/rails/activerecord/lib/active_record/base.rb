@@ -84,7 +84,7 @@ module ActiveRecord #:nodoc:
   # Conditions can either be specified as a string, array, or hash representing the WHERE-part of an SQL statement.
   # The array form is to be used when the condition input is tainted and requires sanitization. The string form can
   # be used for statements that don't involve tainted data. The hash form works much like the array form, except
-  # only equality is possible. Examples:
+  # only equality and range is possible. Examples:
   #
   #   class User < ActiveRecord::Base
   #     def self.authenticate_unsafely(user_name, password)
@@ -120,6 +120,9 @@ module ActiveRecord #:nodoc:
   #   Student.find(:all, :conditions => { :first_name => "Harvey", :status => 1 })
   #   Student.find(:all, :conditions => params[:student])
   #
+  # A range may be used in the hash to use the SQL BETWEEN operator:
+  #
+  #   Student.find(:all, :conditions => { :grade => 9..12 })
   #
   # == Overwriting default accessors
   #
@@ -262,7 +265,7 @@ module ActiveRecord #:nodoc:
   class Base
     # Accepts a logger conforming to the interface of Log4r or the default Ruby 1.8+ Logger class, which is then passed
     # on to any new database connections made and which can be retrieved on both a class and instance level by calling +logger+.
-    cattr_accessor :logger
+    cattr_accessor :logger, :instance_writer => false
     
     include Reloadable::Deprecated
     
@@ -288,54 +291,54 @@ module ActiveRecord #:nodoc:
 
     @@subclasses = {}
 
-    cattr_accessor :configurations
+    cattr_accessor :configurations, :instance_writer => false
     @@configurations = {}
 
     # Accessor for the prefix type that will be prepended to every primary key column name. The options are :table_name and
     # :table_name_with_underscore. If the first is specified, the Product class will look for "productid" instead of "id" as
     # the primary column. If the latter is specified, the Product class will look for "product_id" instead of "id". Remember
     # that this is a global setting for all Active Records.
-    cattr_accessor :primary_key_prefix_type
+    cattr_accessor :primary_key_prefix_type, :instance_writer => false
     @@primary_key_prefix_type = nil
 
     # Accessor for the name of the prefix string to prepend to every table name. So if set to "basecamp_", all
     # table names will be named like "basecamp_projects", "basecamp_people", etc. This is a convenient way of creating a namespace
     # for tables in a shared database. By default, the prefix is the empty string.
-    cattr_accessor :table_name_prefix
+    cattr_accessor :table_name_prefix, :instance_writer => false
     @@table_name_prefix = ""
 
     # Works like +table_name_prefix+, but appends instead of prepends (set to "_basecamp" gives "projects_basecamp",
     # "people_basecamp"). By default, the suffix is the empty string.
-    cattr_accessor :table_name_suffix
+    cattr_accessor :table_name_suffix, :instance_writer => false
     @@table_name_suffix = ""
 
     # Indicates whether or not table names should be the pluralized versions of the corresponding class names.
     # If true, the default table name for a +Product+ class will be +products+. If false, it would just be +product+.
     # See table_name for the full rules on table/class naming. This is true, by default.
-    cattr_accessor :pluralize_table_names
+    cattr_accessor :pluralize_table_names, :instance_writer => false
     @@pluralize_table_names = true
 
     # Determines whether or not to use ANSI codes to colorize the logging statements committed by the connection adapter. These colors
     # make it much easier to overview things during debugging (when used through a reader like +tail+ and on a black background), but
     # may complicate matters if you use software like syslog. This is true, by default.
-    cattr_accessor :colorize_logging
+    cattr_accessor :colorize_logging, :instance_writer => false
     @@colorize_logging = true
 
     # Determines whether to use Time.local (using :local) or Time.utc (using :utc) when pulling dates and times from the database.
     # This is set to :local by default.
-    cattr_accessor :default_timezone
+    cattr_accessor :default_timezone, :instance_writer => false
     @@default_timezone = :local
 
     # Determines whether or not to use a connection for each thread, or a single shared connection for all threads.
     # Defaults to false. Set to true if you're writing a threaded application.
-    cattr_accessor :allow_concurrency
+    cattr_accessor :allow_concurrency, :instance_writer => false
     @@allow_concurrency = false
 
     # Determines whether to speed up access by generating optimized reader
     # methods to avoid expensive calls to method_missing when accessing
     # attributes by name. You might want to set this to false in development
     # mode, because the methods would be regenerated on each request.
-    cattr_accessor :generate_read_methods
+    cattr_accessor :generate_read_methods, :instance_writer => false
     @@generate_read_methods = true
     
     # Specifies the format to use when dumping the database schema with Rails'
@@ -344,7 +347,7 @@ module ActiveRecord #:nodoc:
     # ActiveRecord::Schema file which can be loaded into any database that
     # supports migrations.  Use :ruby if you want to have different database
     # adapters for, e.g., your development and test environments.
-    cattr_accessor :schema_format 
+    cattr_accessor :schema_format , :instance_writer => false
     @@schema_format = :ruby
 
     class << self # Class methods
@@ -476,7 +479,7 @@ module ActiveRecord #:nodoc:
       # Deletes the record with the given +id+ without instantiating an object first. If an array of ids is provided, all of them
       # are deleted.
       def delete(id)
-        delete_all([ "#{primary_key} IN (?)", id ])
+        delete_all([ "#{connection.quote_column_name(primary_key)} IN (?)", id ])
       end
 
       # Destroys the record with the given +id+ by instantiating the object and calling #destroy (all the callbacks are the triggered).
@@ -523,12 +526,12 @@ module ActiveRecord #:nodoc:
       # for looping over a collection where each element require a number of aggregate values. Like the DiscussionBoard
       # that needs to list both the number of posts and comments.
       def increment_counter(counter_name, id)
-        update_all "#{counter_name} = #{counter_name} + 1", "#{primary_key} = #{quote_value(id)}"
+        update_all "#{connection.quote_column_name(counter_name)} = #{connection.quote_column_name(counter_name)} + 1", "#{connection.quote_column_name(primary_key)} = #{quote_value(id)}"
       end
 
       # Works like increment_counter, but decrements instead.
       def decrement_counter(counter_name, id)
-        update_all "#{counter_name} = #{counter_name} - 1", "#{primary_key} = #{quote_value(id)}"
+        update_all "#{connection.quote_column_name(counter_name)} = #{connection.quote_column_name(counter_name)} - 1", "#{connection.quote_column_name(primary_key)} = #{quote_value(id)}"
       end
 
 
@@ -572,7 +575,7 @@ module ActiveRecord #:nodoc:
 
       # Specifies that the attribute by the name of +attr_name+ should be serialized before saving to the database and unserialized
       # after loading from the database. The serialization is done through YAML. If +class_name+ is specified, the serialized
-      # object must be of that class on retrieval or +SerializationTypeMismatch+ will be raised.
+      # object must be of that class on retrieval, or nil. Otherwise, +SerializationTypeMismatch+ will be raised.
       def serialize(attr_name, class_name = Object)
         serialized_attributes[attr_name.to_s] = class_name
       end
@@ -763,7 +766,7 @@ module ActiveRecord #:nodoc:
         @columns
       end
 
-      # Returns an array of column objects for the table associated with this class.
+      # Returns a hash of column objects for the table associated with this class.
       def columns_hash
         @columns_hash ||= columns.inject({}) { |hash, column| hash[column.name] = column; hash }
       end
@@ -816,7 +819,7 @@ module ActiveRecord #:nodoc:
       end
 
       def descends_from_active_record? # :nodoc:
-        superclass.abstract_class? || !columns_hash.include?(inheritance_column)
+        superclass == Base || !columns_hash.include?(inheritance_column)
       end
 
 
@@ -1017,7 +1020,7 @@ module ActiveRecord #:nodoc:
       
         def find_one(id, options)
           conditions = " AND (#{sanitize_sql(options[:conditions])})" if options[:conditions]
-          options.update :conditions => "#{table_name}.#{primary_key} = #{quote_value(id,columns_hash[primary_key])}#{conditions}"
+          options.update :conditions => "#{table_name}.#{connection.quote_column_name(primary_key)} = #{quote_value(id,columns_hash[primary_key])}#{conditions}"
 
           # Use find_every(options).first since the primary key condition
           # already ensures we have a single record. Using find_initial adds
@@ -1032,7 +1035,7 @@ module ActiveRecord #:nodoc:
         def find_some(ids, options)
           conditions = " AND (#{sanitize_sql(options[:conditions])})" if options[:conditions]
           ids_list   = ids.map { |id| quote_value(id,columns_hash[primary_key]) }.join(',')
-          options.update :conditions => "#{table_name}.#{primary_key} IN (#{ids_list})#{conditions}"
+          options.update :conditions => "#{table_name}.#{connection.quote_column_name(primary_key)} IN (#{ids_list})#{conditions}"
 
           result = find_every(options)
 
@@ -1049,13 +1052,10 @@ module ActiveRecord #:nodoc:
         def instantiate(record)
           object =
             if subclass_name = record[inheritance_column]
-              # No type given.
               if subclass_name.empty?
+                # No type given.
                 allocate
-
               else
-                require_association_class(subclass_name)
-
                 # Ignore type if no column is present since it was probably
                 # pulled in from a sloppy join.
                 unless columns_hash.include?(inheritance_column)
@@ -1142,7 +1142,7 @@ module ActiveRecord #:nodoc:
         # The optional scope argument is for the current :find scope.
         # The :lock option has precedence over a scoped :lock.
         def add_lock!(sql, options, scope = :auto)
-          scope = scope(:find) if :auto == :scope
+          scope = scope(:find) if :auto == scope
           options = options.reverse_merge(:lock => scope[:lock]) if scope
           connection.add_lock!(sql, options)
         end
@@ -1188,8 +1188,11 @@ module ActiveRecord #:nodoc:
         #
         # It's even possible to use all the additional parameters to find. For example, the full interface for find_all_by_amount
         # is actually find_all_by_amount(amount, options).
+        #
+        # This also enables you to initialize a record if it is not found, such as find_or_initialize_by_amount(amount) 
+        # or find_or_create_by_user_and_password(user, password).
         def method_missing(method_id, *arguments)
-          if match = /find_(all_by|by)_([_a-zA-Z]\w*)/.match(method_id.to_s)
+          if match = /^find_(all_by|by)_([_a-zA-Z]\w*)$/.match(method_id.to_s)
             finder, deprecated_finder = determine_finder(match), determine_deprecated_finder(match)
 
             attribute_names = extract_attribute_names_from_match(match)
@@ -1221,7 +1224,7 @@ module ActiveRecord #:nodoc:
                   send(deprecated_finder, sanitize_sql(attributes), *arguments[attribute_names.length..-1])
                 end
             end
-          elsif match = /find_or_(initialize|create)_by_([_a-zA-Z]\w*)/.match(method_id.to_s)
+          elsif match = /^find_or_(initialize|create)_by_([_a-zA-Z]\w*)$/.match(method_id.to_s)
             instantiator = determine_instantiator(match)
             attribute_names = extract_attribute_names_from_match(match)
             super unless all_attributes_exists?(attribute_names)
@@ -1266,6 +1269,7 @@ module ActiveRecord #:nodoc:
           case argument
             when nil   then "IS ?"
             when Array then "IN (?)"
+            when Range then "BETWEEN ? AND ?"
             else            "= ?"
           end
         end
@@ -1354,15 +1358,15 @@ module ActiveRecord #:nodoc:
         def compute_type(type_name)
           modularized_name = type_name_with_module(type_name)
           begin
-            instance_eval(modularized_name)
-          rescue NameError => e
-            instance_eval(type_name)
+            class_eval(modularized_name, __FILE__, __LINE__)
+          rescue NameError
+            class_eval(type_name, __FILE__, __LINE__)
           end
         end
 
         # Returns the class descending directly from ActiveRecord in the inheritance hierarchy.
         def class_of_active_record_descendant(klass)
-          if klass.superclass.abstract_class?
+          if klass.superclass == Base || klass.superclass.abstract_class?
             klass
           elsif klass.superclass.nil?
             raise ActiveRecordError, "#{name} doesn't belong in a hierarchy descending from ActiveRecord"
@@ -1394,12 +1398,14 @@ module ActiveRecord #:nodoc:
         #     # => "name='foo''bar' and group_id= 4"
         #   { :status => nil, :group_id => [1,2,3] }
         #     # => "status IS NULL and group_id IN (1,2,3)"
+        #   { :age => 13..18 }
+        #     # => "age BETWEEN 13 AND 18"
         def sanitize_sql_hash(attrs)
           conditions = attrs.map do |attr, value|
             "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}"
           end.join(' AND ')
 
-          replace_bind_variables(conditions, attrs.values)
+          replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
         end
 
         # Accepts an array of conditions.  The array has each value
@@ -1433,6 +1439,13 @@ module ActiveRecord #:nodoc:
               raise PreparedStatementInvalid, "missing value for :#{match} in #{statement}"
             end
           end
+        end
+
+        def expand_range_bind_variables(bind_vars) #:nodoc:
+          bind_vars.each_with_index do |var, index|
+            bind_vars[index, 1] = [var.first, var.last] if var.is_a?(Range)
+          end
+          bind_vars
         end
 
         def quote_bound_value(value) #:nodoc:
@@ -1482,9 +1495,6 @@ module ActiveRecord #:nodoc:
           quoted_value 
         end
     end
-
-    # ActiveRecord::Base is abstract.
-    self.abstract_class = true
 
     public
       # New objects can be instantiated as either empty (pass no construction parameter) or pre-set with
@@ -1550,7 +1560,7 @@ module ActiveRecord #:nodoc:
         unless new_record?
           connection.delete <<-end_sql, "#{self.class.name} Destroy"
             DELETE FROM #{self.class.table_name}
-            WHERE #{self.class.primary_key} = #{quoted_id}
+            WHERE #{connection.quote_column_name(self.class.primary_key)} = #{quoted_id}
           end_sql
         end
 
@@ -1789,7 +1799,7 @@ module ActiveRecord #:nodoc:
         connection.update(
           "UPDATE #{self.class.table_name} " +
           "SET #{quoted_comma_pair_list(connection, attributes_with_quotes(false))} " +
-          "WHERE #{self.class.primary_key} = #{quote_value(id)}",
+          "WHERE #{connection.quote_column_name(self.class.primary_key)} = #{quote_value(id)}",
           "#{self.class.name} Update"
         )
       end
@@ -1950,7 +1960,7 @@ module ActiveRecord #:nodoc:
       def unserialize_attribute(attr_name)
         unserialized_object = object_from_yaml(@attributes[attr_name])
 
-        if unserialized_object.is_a?(self.class.serialized_attributes[attr_name])
+        if unserialized_object.is_a?(self.class.serialized_attributes[attr_name]) || unserialized_object.nil?
           @attributes[attr_name] = unserialized_object
         else
           raise SerializationTypeMismatch,
@@ -2149,7 +2159,13 @@ module ActiveRecord #:nodoc:
 
       def clone_attribute_value(reader_method, attribute_name)
         value = send(reader_method, attribute_name)
-        value.clone
+
+        case value
+        when nil, Fixnum, true, false
+          value
+        else
+          value.clone
+        end
       rescue TypeError, NoMethodError
         value
       end

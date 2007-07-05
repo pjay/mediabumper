@@ -69,7 +69,7 @@ class BasicsTest < Test::Unit::TestCase
     assert_equal("Jason", topic.author_name)
     assert_equal(topics(:first).author_email_address, Topic.find(1).author_email_address)
   end
-  
+
   def test_integers_as_nil
     test = AutoId.create('value' => '')
     assert_nil AutoId.find(test.id).value
@@ -156,7 +156,24 @@ class BasicsTest < Test::Unit::TestCase
     reply = Reply.new
     assert_raise(ActiveRecord::RecordInvalid) { reply.save! }
   end
-  
+
+  def test_save_null_string_attributes
+    topic = Topic.find(1)
+    topic.attributes = { "title" => "null", "author_name" => "null" }
+    topic.save!
+    topic.reload
+    assert_equal("null", topic.title)
+    assert_equal("null", topic.author_name)
+  end
+
+  def test_save_nil_string_attributes
+    topic = Topic.find(1)
+    topic.title = nil
+    topic.save!
+    topic.reload
+    assert_nil topic.title
+  end
+
   def test_hashes_not_mangled
     new_topic = { :title => "New Topic" }
     new_topic_values = { :title => "AnotherTopic" }
@@ -574,8 +591,8 @@ class BasicsTest < Test::Unit::TestCase
     end
   end
 
-  # Oracle and SQLServer do not have a TIME datatype.
-  unless current_adapter?(:SQLServerAdapter, :OracleAdapter)
+  # Oracle, SQLServer, and Sybase do not have a TIME datatype.
+  unless current_adapter?(:SQLServerAdapter, :OracleAdapter, :SybaseAdapter)
     def test_utc_as_time_zone
       Topic.default_timezone = :utc
       attributes = { "bonus_time" => "5:42:00AM" }
@@ -691,6 +708,16 @@ class BasicsTest < Test::Unit::TestCase
     firm.attributes = { "name" => "Next Angle", "rating" => 5 }
     assert_equal 1, firm.rating
   end
+  
+  def test_mass_assignment_protection_against_class_attribute_writers
+    [:logger, :configurations, :primary_key_prefix_type, :table_name_prefix, :table_name_suffix, :pluralize_table_names, :colorize_logging,
+      :default_timezone, :allow_concurrency, :generate_read_methods, :schema_format, :verification_timeout, :lock_optimistically, :record_timestamps].each do |method|
+      assert  Task.respond_to?(method)
+      assert  Task.respond_to?("#{method}=")
+      assert  Task.new.respond_to?(method)
+      assert !Task.new.respond_to?("#{method}=")
+    end
+  end
 
   def test_customized_primary_key_remains_protected
     subscriber = Subscriber.new(:nick => 'webster123', :name => 'nice try')
@@ -804,8 +831,8 @@ class BasicsTest < Test::Unit::TestCase
   end
 
   def test_attributes_on_dummy_time
-    # Oracle and SQL Server do not have a TIME datatype.
-    return true if current_adapter?(:SQLServerAdapter, :OracleAdapter)
+    # Oracle, SQL Server, and Sybase do not have a TIME datatype.
+    return true if current_adapter?(:SQLServerAdapter, :OracleAdapter, :SybaseAdapter)
 
     attributes = {
       "bonus_time" => "5:42:00AM"
@@ -1027,7 +1054,7 @@ class BasicsTest < Test::Unit::TestCase
   end
 
   def test_sql_injection_via_find
-    assert_raises(ActiveRecord::RecordNotFound) do
+    assert_raises(ActiveRecord::RecordNotFound, ActiveRecord::StatementInvalid) do
       Topic.find("123456 OR id > 0")
     end
   end
@@ -1059,16 +1086,29 @@ class BasicsTest < Test::Unit::TestCase
     assert_equal(myobj, topic.content)
   end
 
-  def test_serialized_attribute_with_class_constraint
+  def test_nil_serialized_attribute_with_class_constraint
     myobj = MyObject.new('value1', 'value2')
-    topic = Topic.create("content" => myobj)
+    topic = Topic.new
+    assert_nil topic.content
+  end
+
+  def test_should_raise_exception_on_serialized_attribute_with_type_mismatch
+    myobj = MyObject.new('value1', 'value2')
+    topic = Topic.new(:content => myobj)
+    assert topic.save
     Topic.serialize(:content, Hash)
-
     assert_raise(ActiveRecord::SerializationTypeMismatch) { Topic.find(topic.id).content }
+  ensure
+    Topic.serialize(:content)
+  end
 
+  def test_serialized_attribute_with_class_constraint
     settings = { "color" => "blue" }
-    Topic.find(topic.id).update_attribute("content", settings)
+    Topic.serialize(:content, Hash)
+    topic = Topic.new(:content => settings)
+    assert topic.save
     assert_equal(settings, Topic.find(topic.id).content)
+  ensure
     Topic.serialize(:content)
   end
 
@@ -1336,7 +1376,7 @@ class BasicsTest < Test::Unit::TestCase
   end
 
   def test_abstract_class
-    assert ActiveRecord::Base.abstract_class?
+    assert !ActiveRecord::Base.abstract_class?
     assert LoosePerson.abstract_class?
     assert !LooseDescendant.abstract_class?
   end
@@ -1379,7 +1419,7 @@ class BasicsTest < Test::Unit::TestCase
     assert !StiPost.descends_from_active_record?
 
     # Concrete subclasses an abstract class which has a type column.
-    assert SubStiPost.descends_from_active_record?
+    assert !SubStiPost.descends_from_active_record?
   end
 
   def test_find_on_abstract_base_class_doesnt_use_type_condition

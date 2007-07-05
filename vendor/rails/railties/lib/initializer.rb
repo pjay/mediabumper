@@ -1,7 +1,11 @@
 require 'logger'
 require 'set'
-require File.join(File.dirname(__FILE__), 'railties_path')
-require File.join(File.dirname(__FILE__), 'rails/version')
+require 'pathname'
+
+$LOAD_PATH.unshift File.dirname(__FILE__)
+require 'railties_path'
+require 'rails/version'
+
 
 RAILS_ENV = (ENV['RAILS_ENV'] || 'development').dup unless defined?(RAILS_ENV)
 
@@ -48,7 +52,7 @@ module Rails
     # instance.
     def initialize(configuration)
       @configuration = configuration
-      @loaded_plugins = Set.new
+      @loaded_plugins = []
     end
 
     # Sequentially step through all of the available initialization routines,
@@ -176,9 +180,22 @@ module Rails
     # * evaluate <tt>init.rb</tt> if present
     #
     # After all plugins are loaded, duplicates are removed from the load path.
-    # Plugins are loaded in alphabetical order.
+    # If an array of plugin names is specified in config.plugins, the plugins
+    # will be loaded in that order. Otherwise, plugins are loaded in alphabetical
+    # order.
     def load_plugins
-      find_plugins(configuration.plugin_paths).sort.each { |path| load_plugin path }
+      if configuration.plugins.nil?
+        # a nil value implies we don't care about plugins; load 'em all in a reliable order
+        find_plugins(configuration.plugin_paths).sort.each { |path| load_plugin path }
+      elsif !configuration.plugins.empty?
+        # we've specified a config.plugins array, so respect that order
+        plugin_paths = find_plugins(configuration.plugin_paths)
+        configuration.plugins.each do |name|
+          path = plugin_paths.find { |p| File.basename(p) == name }
+          raise(LoadError, "Cannot find the plugin '#{name}'!") if path.nil?
+          load_plugin path
+        end
+      end
       $LOAD_PATH.uniq!
     end
 
@@ -188,7 +205,9 @@ module Rails
       silence_warnings do
         config = configuration
         constants = self.class.constants
+        
         eval(IO.read(configuration.environment_path), binding, configuration.environment_path)
+        
         (self.class.constants - constants).each do |const|
           Object.const_set(const, self.class.const_get(const))
         end
@@ -294,10 +313,10 @@ module Rails
 
     def initialize_temporary_directories
       if configuration.frameworks.include?(:action_controller)
-        session_path = "#{RAILS_ROOT}/tmp/sessions/"
+        session_path = "#{configuration.root_path}/tmp/sessions/"
         ActionController::Base.session_options[:tmpdir] = File.exist?(session_path) ? session_path : Dir::tmpdir
 
-        cache_path = "#{RAILS_ROOT}/tmp/cache/"
+        cache_path = "#{configuration.root_path}/tmp/cache/"
         if File.exist?(cache_path)
           ActionController::Base.fragment_cache_store = :file_store, cache_path
         end
@@ -345,7 +364,7 @@ module Rails
       end
 
       def plugin_enabled?(path)
-        configuration.plugins.empty? || configuration.plugins.include?(File.basename(path))
+        configuration.plugins.nil? || configuration.plugins.include?(File.basename(path))
       end
 
       # Load the plugin at <tt>path</tt> unless already loaded.
@@ -374,6 +393,8 @@ module Rails
         if has_lib
           application_lib_index = $LOAD_PATH.index(File.join(RAILS_ROOT, "lib")) || 0
           $LOAD_PATH.insert(application_lib_index + 1, lib_path)
+          Dependencies.load_paths << lib_path
+          Dependencies.load_once_paths << lib_path
         end
 
         # Allow plugins to reference the current configuration object
@@ -399,6 +420,9 @@ module Rails
   #   config = Rails::Configuration.new
   #   Rails::Initializer.run(:process, config)
   class Configuration
+    # The application's base directory.
+    attr_reader :root_path
+
     # A stub for setting options on ActionController::Base
     attr_accessor :action_controller
 
@@ -470,7 +494,9 @@ module Rails
     # any method of +nil+. Set to +false+ for the standard Ruby behavior.
     attr_accessor :whiny_nils
 
-    # The list of plugins to load. If this is set to <tt>[]</tt>, all plugins will be loaded.
+    # The list of plugins to load. If this is set to <tt>nil</tt>, all plugins will
+    # be loaded. If this is set to <tt>[]</tt>, no plugins will be loaded. Otherwise,
+    # plugins will be loaded in the order specified.
     attr_accessor :plugins
 
     # The path to the root of the plugins directory. By default, it is in
@@ -480,6 +506,8 @@ module Rails
     # Create a new Configuration instance, initialized with the default
     # values.
     def initialize
+      set_root_path!
+
       self.frameworks                   = default_frameworks
       self.load_paths                   = default_load_paths
       self.load_once_paths              = default_load_once_paths
@@ -497,6 +525,23 @@ module Rails
       for framework in default_frameworks
         self.send("#{framework}=", Rails::OrderedOptions.new)
       end
+    end
+
+    # Set the root_path to RAILS_ROOT and canonicalize it.
+    def set_root_path!
+      raise 'RAILS_ROOT is not set' unless defined?(::RAILS_ROOT)
+      raise 'RAILS_ROOT is not a directory' unless File.directory?(::RAILS_ROOT)
+
+      @root_path =
+        # Pathname is incompatible with Windows, but Windows doesn't have
+        # real symlinks so File.expand_path is safe.
+        if RUBY_PLATFORM =~ /(:?mswin|mingw)/
+          File.expand_path(::RAILS_ROOT)
+
+        # Otherwise use Pathname#realpath which respects symlinks.
+        else
+          Pathname.new(::RAILS_ROOT).realpath.to_s
+        end
     end
 
     # Loads and returns the contents of the #database_configuration_file. The
@@ -535,6 +580,7 @@ module Rails
     #
     # See Dispatcher#to_prepare.
     def to_prepare(&callback)
+      require 'dispatcher' unless defined?(::Dispatcher)
       Dispatcher.to_prepare(&callback)
     end
 
@@ -557,10 +603,6 @@ module Rails
     end
 
     private
-      def root_path
-        ::RAILS_ROOT
-      end
-
       def framework_root_path
         defined?(::RAILS_FRAMEWORK_ROOT) ? ::RAILS_FRAMEWORK_ROOT : "#{root_path}/vendor/rails"
       end
@@ -592,15 +634,12 @@ module Rails
           vendor
         ).map { |dir| "#{root_path}/#{dir}" }.select { |dir| File.directory?(dir) }
 
-        paths.concat Dir["#{root_path}/vendor/plugins/*/lib/"]
         paths.concat builtin_directories
       end
 
+      # Doesn't matter since plugins aren't in load_paths yet.
       def default_load_once_paths
-        plugin_root = "#{root_path}/vendor/plugins/"
-        default_load_paths.select do |path|
-          path[0, plugin_root.length] == plugin_root # No begins_with yet
-        end
+        []
       end
 
       def default_log_path
@@ -642,7 +681,7 @@ module Rails
       end
 
       def default_plugins
-        []
+        nil
       end
 
       def default_plugin_paths

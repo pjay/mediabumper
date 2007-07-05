@@ -1,14 +1,98 @@
-*1.15.0 RC2*
+*SVN*
+
+* Save associated records only if the association is already loaded.  #8713 [blaine]
+
+* Changing the :default Date format doesn't break date quoting.  #6312 [bshand, Elias]
+
+* Allow nil serialized attributes with a set class constraint. #7293 [sandofsky]
+
+* belongs_to assignment creates a new proxy rather than modifying its target in-place.  #8412 [mmangino@elevatedrails.com]
+
+* Fix column type detection while loading fixtures.  Closes #7987 [roderickvd]
+
+* Document deep eager includes.  #6267 [Josh Susser, Dan Manges]
+
+* Oracle: extract column length for CHAR also.  #7866 [ymendel]
+
+* Small additions and fixes for ActiveRecord documentation.  Closes #7342 [jeremymcanally]
+
+* SQLite: binary escaping works with $KCODE='u'.  #7862 [tsuka]
+
+* Improved cloning performance by relying less on exception raising #8159 [Blaine]
+
+
+*1.15.3* (March 12th, 2007)
+
+* Allow a polymorphic :source for has_many :through associations. Closes #7143 [protocool] 
+
+* Consistently quote primary key column names.  #7763 [toolmantim]
+
+* Fixtures: fix YAML ordered map support.  #2665 [Manuel Holtgrewe, nfbuckley]
+
+* Fix has_many :through << with custom foreign keys.  #6466, #7153 [naffis, Rich Collins]
+
+
+*1.15.2* (February 5th, 2007)
+
+* Pass a range in :conditions to use the SQL BETWEEN operator.  #6974 [dcmanges]
+    Student.find(:all, :conditions => { :grade => 9..12 })
+
+* Don't create instance writer methods for class attributes. [Rick]
+
+* When dealing with SQLite3, use the table_info pragma helper, so that the bindings can do some translation for when sqlite3 breaks incompatibly between point releases. [Jamis Buck]
+
+* SQLServer: don't choke on strings containing 'null'.  #7083 [Jakob S]
+
+* Consistently use LOWER() for uniqueness validations (rather than mixing with UPPER()) so the database can always use a functional index on the lowercased column.  #6495 [Si]
+
+* MySQL: SET SQL_AUTO_IS_NULL=0 so 'where id is null' doesn't select the last inserted id.  #6778 [Jonathan Viney, timc]
+
+* Fixtures use the table name and connection from set_fixture_class.  #7330 [Anthony Eden]
+
+* SQLServer: quote table name in indexes query.  #2928 [keithm@infused.org]
+
+
+*1.15.1* (January 17th, 2007)
+
+* Fix nodoc breaking of adapters
+
+
+*1.15.0* (January 16th, 2007)
+
+* [DOC] clear up some ambiguity with the way has_and_belongs_to_many creates the default join table name.  #7072 [jeremymcanally]
+
+* change_column accepts :default => nil. Skip column options for primary keys.  #6956, #7048 [dcmanges, Jeremy Kemper]
+
+* MySQL, PostgreSQL: change_column_default quotes the default value and doesn't lose column type information.  #3987, #6664 [Jonathan Viney, manfred, altano@bigfoot.com]
+
+* Oracle: create_table takes a :sequence_name option to override the 'tablename_seq' default.  #7000 [Michael Schoen]
+
+* MySQL: retain SSL settings on reconnect.  #6976 [randyv2]
+
+* SQLServer: handle [quoted] table names.  #6635 [rrich]
+
+* acts_as_nested_set works with single-table inheritance.  #6030 [Josh Susser]
+
+* PostgreSQL, Oracle: correctly perform eager finds with :limit and :order.  #4668, #7021 [eventualbuddha, Michael Schoen]
+
+* Fix the Oracle adapter for serialized attributes stored in CLOBs.  Closes #6825 [mschoen, tdfowler]
+
+* [DOCS] Apply more documentation for ActiveRecord Reflection.  Closes #4055 [Robby Russell]
+
+* [DOCS] Document :allow_nil option of #validate_uniqueness_of. Closes #3143 [Caio Chassot]
+
+* Bring the sybase adapter up to scratch for 1.2 release. [jsheets]
+
+* Oracle: fix connection reset failure.  #6846 [leonlleslie]
+
+* Subclass instantiation doesn't try to explicitly require the corresponding subclass.  #6840 [leei, Jeremy Kemper]
+
+* fix faulty inheritance tests and that eager loading grabs the wrong inheritance column when the class of your association is an STI subclass. Closes #6859 [protocool]
 
 * find supports :lock with :include. Check whether your database allows SELECT ... FOR UPDATE with outer joins before using.  #6764 [vitaly, Jeremy Kemper]
 
-* Subclasses of an abstract class work with single-table inheritance.  #5704 [nick+rails@ag.arizona.edu, Ryan Davis, Jeremy Kemper]
-
 * Support nil and Array in :conditions => { attr => value } hashes.  #6548 [Assaf, Jeremy Kemper]
     find(:all, :conditions => { :topic_id => [1, 2, 3], :last_read => nil }
-
-
-*1.15.0 RC1* (r5619, November 22nd, 2006)
 
 * Quote ActiveSupport::Multibyte::Chars.  #6653 [Julian Tarkhanov]
 

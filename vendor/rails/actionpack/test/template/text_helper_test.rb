@@ -130,7 +130,9 @@ class TextHelperTest < Test::Unit::TestCase
               http://www.rubyonrails.com/contact;new
               http://www.rubyonrails.com/contact;new%20with%20spaces
               http://www.rubyonrails.com/contact;new?with=query&string=params
-              http://www.rubyonrails.com/~minam/contact;new?with=query&string=params)
+              http://www.rubyonrails.com/~minam/contact;new?with=query&string=params
+              http://en.wikipedia.org/wiki/Wikipedia:Today%27s_featured_picture_%28animation%29/January_20%2C_2007
+            )
 
     urls.each do |url|
       assert_equal %(<a href="#{url}">#{url}</a>), auto_link(url)
@@ -151,6 +153,14 @@ class TextHelperTest < Test::Unit::TestCase
     link4_result = %{<a href="#{link4_raw}">#{link4_raw}</a>}
     link5_raw    = 'http://foo.example.com:3000/controller/action'
     link5_result = %{<a href="#{link5_raw}">#{link5_raw}</a>}
+    link6_raw    = 'http://foo.example.com:3000/controller/action+pack'
+    link6_result = %{<a href="#{link6_raw}">#{link6_raw}</a>}
+    link7_raw    = 'http://foo.example.com/controller/action?parm=value&p2=v2#anchor-123'
+    link7_result = %{<a href="#{link7_raw}">#{link7_raw}</a>}
+    link8_raw    = 'http://foo.example.com:3000/controller/action.html'
+    link8_result = %{<a href="#{link8_raw}">#{link8_raw}</a>}
+    link9_raw    = 'http://business.timesonline.co.uk/article/0,,9065-2473189,00.html'
+    link9_result = %{<a href="#{link9_raw}">#{link9_raw}</a>}
 
     assert_equal %(hello #{email_result}), auto_link("hello #{email_raw}", :email_addresses)
     assert_equal %(Go to #{link_result}), auto_link("Go to #{link_raw}", :urls)
@@ -176,6 +186,20 @@ class TextHelperTest < Test::Unit::TestCase
     assert_equal %(<p>Link #{link4_result}</p>), auto_link("<p>Link #{link4_raw}</p>")
     assert_equal %(<p>#{link4_result} Link</p>), auto_link("<p>#{link4_raw} Link</p>")
     assert_equal %(<p>#{link5_result} Link</p>), auto_link("<p>#{link5_raw} Link</p>")
+    assert_equal %(<p>#{link6_result} Link</p>), auto_link("<p>#{link6_raw} Link</p>")
+    assert_equal %(<p>#{link7_result} Link</p>), auto_link("<p>#{link7_raw} Link</p>")
+    assert_equal %(Go to #{link8_result}), auto_link("Go to #{link8_raw}", :urls)
+    assert_equal %(Go to #{link8_raw}), auto_link("Go to #{link8_raw}", :email_addresses)
+    assert_equal %(<p>Link #{link8_result}</p>), auto_link("<p>Link #{link8_raw}</p>")
+    assert_equal %(<p>#{link8_result} Link</p>), auto_link("<p>#{link8_raw} Link</p>")
+    assert_equal %(Go to #{link8_result}.), auto_link(%(Go to #{link8_raw}.))
+    assert_equal %(<p>Go to #{link8_result}. seriously, #{link8_result}? i think I'll say hello to #{email_result}. instead.</p>), auto_link(%(<p>Go to #{link8_raw}. seriously, #{link8_raw}? i think I'll say hello to #{email_raw}. instead.</p>))
+    assert_equal %(Go to #{link9_result}), auto_link("Go to #{link9_raw}", :urls)
+    assert_equal %(Go to #{link9_raw}), auto_link("Go to #{link9_raw}", :email_addresses)
+    assert_equal %(<p>Link #{link9_result}</p>), auto_link("<p>Link #{link9_raw}</p>")
+    assert_equal %(<p>#{link9_result} Link</p>), auto_link("<p>#{link9_raw} Link</p>")
+    assert_equal %(Go to #{link9_result}.), auto_link(%(Go to #{link9_raw}.))
+    assert_equal %(<p>Go to #{link9_result}. seriously, #{link9_result}? i think I'll say hello to #{email_result}. instead.</p>), auto_link(%(<p>Go to #{link9_raw}. seriously, #{link9_raw}? i think I'll say hello to #{email_raw}. instead.</p>))
     assert_equal '', auto_link(nil)
     assert_equal '', auto_link('')
   end
@@ -197,7 +221,7 @@ class TextHelperTest < Test::Unit::TestCase
   def test_sanitize_form
     raw = "<form action=\"/foo/bar\" method=\"post\"><input></form>"
     result = sanitize(raw)
-    assert_equal "&lt;form action='/foo/bar' method='post'><input>&lt;/form>", result
+    assert_equal %(&lt;form action="/foo/bar" method="post"><input>&lt;/form>), result
   end
 
   def test_sanitize_plaintext
@@ -209,25 +233,25 @@ class TextHelperTest < Test::Unit::TestCase
   def test_sanitize_script
     raw = "<script language=\"Javascript\">blah blah blah</script>"
     result = sanitize(raw)
-    assert_equal "&lt;script language='Javascript'>blah blah blah&lt;/script>", result
+    assert_equal %(&lt;script language="Javascript">blah blah blah&lt;/script>), result
   end
 
   def test_sanitize_js_handlers
     raw = %{onthis="do that" <a href="#" onclick="hello" name="foo" onbogus="remove me">hello</a>}
     result = sanitize(raw)
-    assert_equal %{onthis="do that" <a name='foo' href='#'>hello</a>}, result
+    assert_equal %{onthis="do that" <a name="foo" href="#">hello</a>}, result
   end
 
   def test_sanitize_javascript_href
     raw = %{href="javascript:bang" <a href="javascript:bang" name="hello">foo</a>, <span href="javascript:bang">bar</span>}
     result = sanitize(raw)
-    assert_equal %{href="javascript:bang" <a name='hello'>foo</a>, <span>bar</span>}, result
+    assert_equal %{href="javascript:bang" <a name="hello">foo</a>, <span>bar</span>}, result
   end
   
   def test_sanitize_image_src
     raw = %{src="javascript:bang" <img src="javascript:bang" width="5">foo</img>, <span src="javascript:bang">bar</span>}
     result = sanitize(raw)
-    assert_equal %{src="javascript:bang" <img width='5'>foo</img>, <span>bar</span>}, result
+    assert_equal %{src="javascript:bang" <img width="5">foo</img>, <span>bar</span>}, result
   end
   
   def test_cycle_class

@@ -1,7 +1,7 @@
 require 'yaml'
 
 module ActiveSupport
-  module Deprecation
+  module Deprecation #:nodoc:
     mattr_accessor :debug
     self.debug = false
 
@@ -13,8 +13,9 @@ module ActiveSupport
                          $stderr.puts callstack.join("\n  ") if debug
                        },
       'development' => Proc.new { |message, callstack|
-                         RAILS_DEFAULT_LOGGER.warn message
-                         RAILS_DEFAULT_LOGGER.debug callstack.join("\n  ") if debug
+                         logger = defined?(::RAILS_DEFAULT_LOGGER) ? ::RAILS_DEFAULT_LOGGER : Logger.new($stderr)
+                         logger.warn message
+                         logger.debug callstack.join("\n  ") if debug
                        }
     }
 
@@ -81,7 +82,7 @@ module ActiveSupport
     # Warnings are not silenced by default.
     self.silenced = false
 
-    module ClassMethods
+    module ClassMethods #:nodoc:
       # Declare that a method has been deprecated.
       def deprecate(*method_names)
         options = method_names.last.is_a?(Hash) ? method_names.pop : {}
@@ -112,7 +113,7 @@ module ActiveSupport
       end
     end
 
-    module Assertions
+    module Assertions #:nodoc:
       def assert_deprecated(match = nil, &block)
         result, warnings = collect_deprecations(&block)
         assert !warnings.empty?, "Expected a deprecation warning within the block but received none"
@@ -143,12 +144,19 @@ module ActiveSupport
         end
     end
 
-    # Stand-in for @request, @attributes, etc.
-    class DeprecatedInstanceVariableProxy
+    # Stand-in for @request, @attributes, @params, etc which emits deprecation
+    # warnings on any method call (except #inspect).
+    class DeprecatedInstanceVariableProxy #:nodoc:
       instance_methods.each { |m| undef_method m unless m =~ /^__/ }
 
       def initialize(instance, method, var = "@#{method}")
         @instance, @method, @var = instance, method, var
+      end
+
+      # Don't give a deprecation warning on inspect since test/unit and error
+      # logs rely on it for diagnostics.
+      def inspect
+        target.inspect
       end
 
       private
@@ -172,10 +180,23 @@ class Module
   include ActiveSupport::Deprecation::ClassMethods
 end
 
+require 'test/unit/error'
+
 module Test
   module Unit
     class TestCase
       include ActiveSupport::Deprecation::Assertions
+    end
+
+    class Error # :nodoc:
+      # Silence warnings when reporting test errors.
+      def message_with_silenced_deprecation
+        ActiveSupport::Deprecation.silence do
+          message_without_silenced_deprecation
+        end
+      end
+
+      alias_method_chain :message, :silenced_deprecation
     end
   end
 end

@@ -5,18 +5,21 @@ require 'fixtures/company'
 require 'fixtures/task'
 require 'fixtures/reply'
 require 'fixtures/joke'
+require 'fixtures/course'
 require 'fixtures/category'
 
 class FixturesTest < Test::Unit::TestCase
   self.use_instantiated_fixtures = true
   self.use_transactional_fixtures = false
 
-  fixtures :topics, :developers, :accounts, :tasks, :categories, :funny_jokes
+  fixtures :topics, :developers, :accounts, :tasks, :categories, :funny_jokes, :binaries
 
-  FIXTURES = %w( accounts companies customers
+  FIXTURES = %w( accounts binaries companies customers
                  developers developers_projects entrants
                  movies projects subscribers topics tasks )
   MATCH_ATTRIBUTE_NAME = /[a-zA-Z][-_\w]*/
+
+  BINARY_FIXTURE_PATH = File.dirname(__FILE__) + '/fixtures/flowers.jpg'
 
   def test_clean_fixtures
     FIXTURES.each do |name|
@@ -99,7 +102,6 @@ class FixturesTest < Test::Unit::TestCase
     assert first
   end
 
-
   def test_bad_format
     path = File.join(File.dirname(__FILE__), 'fixtures', 'bad_fixtures')
     Dir.entries(path).each do |file|
@@ -173,7 +175,6 @@ class FixturesTest < Test::Unit::TestCase
     end
   end
 
-
   def test_yml_file_in_subdirectory
     assert_equal(categories(:sub_special_1).name, "A special category in a subdir file")
     assert_equal(categories(:sub_special_1).class, SpecialCategory)
@@ -184,7 +185,11 @@ class FixturesTest < Test::Unit::TestCase
     assert_equal(categories(:sub_special_3).class, SpecialCategory)
   end
 
-
+  def test_binary_in_fixtures
+    assert_equal 1, @binaries.size
+    data = File.read(BINARY_FIXTURE_PATH).freeze
+    assert_equal data, @flowers.data
+  end
 end
 
 if Account.connection.respond_to?(:reset_pk_sequence!)
@@ -331,6 +336,16 @@ class SetTableNameFixturesTest < Test::Unit::TestCase
   
   def test_table_method
     assert_kind_of Joke, funny_jokes(:a_joke)
+  end
+end
+
+class CustomConnectionFixturesTest < Test::Unit::TestCase
+  set_fixture_class :courses => Course
+  fixtures :courses
+  
+  def test_connection
+    assert_kind_of Course, courses(:ruby)
+    assert_equal Course.connection, courses(:ruby).connection
   end
 end
 

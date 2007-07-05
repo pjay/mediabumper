@@ -157,6 +157,9 @@ module ActiveRecord
         end
 
         def construct_calculation_sql(operation, column_name, options) #:nodoc:
+          operation = operation.to_s.downcase
+          options = options.symbolize_keys          
+          
           scope           = scope(:find)
           merged_includes = merge_includes(scope ? scope[:include] : [], options[:include])
           aggregate_alias = column_alias_for(operation, column_name)
@@ -239,8 +242,8 @@ module ActiveRecord
           options.assert_valid_keys(CALCULATIONS_OPTIONS)
         end
 
-        # converts a given key to the value that the database adapter returns as
-        #
+        # Converts a given key to the value that the database adapter returns as
+        # as a usable column name.
         #   users.id #=> users_id
         #   sum(id) #=> sum_id
         #   count(distinct users.id) #=> count_distinct_users_id

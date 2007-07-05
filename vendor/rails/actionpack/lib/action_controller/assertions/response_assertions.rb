@@ -70,7 +70,8 @@ module ActionController
 
               if value.respond_to?(:[]) && value['controller']
                 if key == :actual && value['controller'].first != '/' && !value['controller'].include?('/')
-                  value['controller'] = ActionController::Routing.controller_relative_to(value['controller'], @controller.class.controller_path)
+                  new_controller_path = ActionController::Routing.controller_relative_to(value['controller'], @controller.class.controller_path)
+                  value['controller'] = new_controller_path if value['controller'] != new_controller_path && ActionController::Routing.possible_controllers.include?(new_controller_path)
                 end
                 value['controller'] = value['controller'][1..-1] if value['controller'].first == '/' # strip leading hash
               end
@@ -119,6 +120,7 @@ module ActionController
       end
 
       private
+        # Recognizes the route for a given path.
         def recognized_request_for(path, request_method = nil)
           path = "/#{path}" unless path.first == '/'
 
@@ -131,6 +133,7 @@ module ActionController
           request
         end
 
+        # Proxy to to_param if the object will respond to it.
         def parameterize(value)
           value.respond_to?(:to_param) ? value.to_param : value
         end

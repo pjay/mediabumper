@@ -853,7 +853,7 @@ class DateHelperTest < Test::Unit::TestCase
     expected << "</select>\n"
 
     expected << %{<select id="post_written_on_2i" name="post[written_on(2i)]">\n}
-    1.upto(12) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 6}>#{Time.now.change(:month => i).strftime("%B")}</option>\n) }
+    1.upto(12) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 6}>#{Date::MONTHNAMES[i]}</option>\n) }
     expected << "</select>\n"
 
     expected <<  %{<select id="post_written_on_1i" name="post[written_on(1i)]">\n}
@@ -861,6 +861,49 @@ class DateHelperTest < Test::Unit::TestCase
     expected << "</select>\n"
 
     assert_equal expected, date_select("post", "written_on", :order => [:day, :month, :year])
+  end
+
+  def test_date_select_with_nil
+    @post = Post.new
+
+    start_year = Time.now.year-5
+    end_year   = Time.now.year+5
+    expected =   %{<select id="post_written_on_1i" name="post[written_on(1i)]">\n}
+    start_year.upto(end_year) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == Time.now.year}>#{i}</option>\n) }
+    expected << "</select>\n"
+
+    expected << %{<select id="post_written_on_2i" name="post[written_on(2i)]">\n}
+    1.upto(12) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == Time.now.month}>#{Date::MONTHNAMES[i]}</option>\n) }
+    expected << "</select>\n"
+
+    expected << %{<select id="post_written_on_3i" name="post[written_on(3i)]">\n}
+    1.upto(31) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == Time.now.day}>#{i}</option>\n) }
+    expected << "</select>\n"
+
+    assert_equal expected, date_select("post", "written_on")
+  end
+
+  def test_date_select_with_nil_and_blank
+    @post = Post.new
+
+    start_year = Time.now.year-5
+    end_year   = Time.now.year+5
+    expected =   %{<select id="post_written_on_1i" name="post[written_on(1i)]">\n}
+    expected << "<option value=\"\"></option>\n"
+    start_year.upto(end_year) { |i| expected << %(<option value="#{i}">#{i}</option>\n) }
+    expected << "</select>\n"
+
+    expected << %{<select id="post_written_on_2i" name="post[written_on(2i)]">\n}
+    expected << "<option value=\"\"></option>\n"
+    1.upto(12) { |i| expected << %(<option value="#{i}">#{Date::MONTHNAMES[i]}</option>\n) }
+    expected << "</select>\n"
+
+    expected << %{<select id="post_written_on_3i" name="post[written_on(3i)]">\n}
+    expected << "<option value=\"\"></option>\n"
+    1.upto(31) { |i| expected << %(<option value="#{i}">#{i}</option>\n) }
+    expected << "</select>\n"
+
+    assert_equal expected, date_select("post", "written_on", :include_blank => true)
   end
 
   def test_date_select_cant_override_discard_hour
@@ -1135,7 +1178,7 @@ class DateHelperTest < Test::Unit::TestCase
     1999.upto(2009) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 2004}>#{i}</option>\n) }
     expected << "</select>\n"
     expected << %{<select id="post_updated_at_2i" name="post[updated_at(2i)]">\n}
-    1.upto(12) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 6}>#{Time.now.change(:month => i).strftime("%B")}</option>\n) }
+    1.upto(12) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 6}>#{Date::MONTHNAMES[i]}</option>\n) }
     expected << "</select>\n"
     expected << %{<select id="post_updated_at_3i" name="post[updated_at(3i)]">\n}
     1.upto(31) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 15}>#{i}</option>\n) }
@@ -1164,7 +1207,7 @@ class DateHelperTest < Test::Unit::TestCase
 
     expected = %{<input type="hidden" id="post_updated_at_1i" name="post[updated_at(1i)]" value="2004" />\n}
     expected << %{<select id="post_updated_at_2i" name="post[updated_at(2i)]">\n}
-    1.upto(12) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 6}>#{Time.now.change(:month => i).strftime("%B")}</option>\n) }
+    1.upto(12) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 6}>#{Date::MONTHNAMES[i]}</option>\n) }
     expected << "</select>\n"
     expected << %{<select id="post_updated_at_3i" name="post[updated_at(3i)]">\n}
     1.upto(31) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 15}>#{i}</option>\n) }
@@ -1233,7 +1276,7 @@ class DateHelperTest < Test::Unit::TestCase
     1.upto(31) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 15}>#{i}</option>\n) }
     expected << "</select>\n"
     expected << %{<select id="post_updated_at_2i" name="post[updated_at(2i)]">\n}
-    1.upto(12) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 6}>#{Time.now.change(:month => i).strftime("%B")}</option>\n) }
+    1.upto(12) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 6}>#{Date::MONTHNAMES[i]}</option>\n) }
     expected << "</select>\n"
     expected << %{<select id="post_updated_at_1i" name="post[updated_at(1i)]">\n}
     1999.upto(2009) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 2004}>#{i}</option>\n) }
@@ -1261,7 +1304,7 @@ class DateHelperTest < Test::Unit::TestCase
     1.upto(31) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 15}>#{i}</option>\n) }
     expected << "</select>\n"
     expected << %{<select id="post_updated_at_2i" name="post[updated_at(2i)]">\n}
-    1.upto(12) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 6}>#{Time.now.change(:month => i).strftime("%B")}</option>\n) }
+    1.upto(12) { |i| expected << %(<option value="#{i}"#{' selected="selected"' if i == 6}>#{Date::MONTHNAMES[i]}</option>\n) }
     expected << "</select>\n"
 
     expected << " &mdash; "

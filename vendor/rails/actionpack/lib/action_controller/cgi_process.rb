@@ -1,6 +1,8 @@
 require 'action_controller/cgi_ext/cgi_ext'
 require 'action_controller/cgi_ext/cookie_performance_fix'
 require 'action_controller/cgi_ext/raw_post_data_fix'
+require 'action_controller/cgi_ext/session_performance_fix'
+require 'action_controller/cgi_ext/pstore_performance_fix'
 
 module ActionController #:nodoc:
   class Base
@@ -107,10 +109,21 @@ module ActionController #:nodoc:
           @session = Hash.new
         else
           stale_session_check! do
-            if session_options_with_string_keys['new_session'] == true
-              @session = new_session
-            else
-              @session = CGI::Session.new(@cgi, session_options_with_string_keys)
+            case value = session_options_with_string_keys['new_session']
+              when true
+                @session = new_session
+              when false
+                begin
+                  @session = CGI::Session.new(@cgi, session_options_with_string_keys)
+                # CGI::Session raises ArgumentError if 'new_session' == false
+                # and no session cookie or query param is present.
+                rescue ArgumentError
+                  @session = Hash.new
+                end
+              when nil
+                @session = CGI::Session.new(@cgi, session_options_with_string_keys)
+              else
+                raise ArgumentError, "Invalid new_session option: #{value}"
             end
             @session['__valid_session']
           end
@@ -160,7 +173,7 @@ end_msg
       end
 
       def session_options_with_string_keys
-        @session_options_with_string_keys ||= DEFAULT_SESSION_OPTIONS.merge(@session_options).inject({}) { |options, (k,v)| options[k.to_s] = v; options }
+        @session_options_with_string_keys ||= DEFAULT_SESSION_OPTIONS.merge(@session_options).stringify_keys
       end
   end
 
