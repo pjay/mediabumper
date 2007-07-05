@@ -1,2 +1,8 @@
 <h2>Your player</h2>
-<p><%= mp3_player({}, {:width => 195, :height => 60}) %></p>
+<%#= mp3_player({:file => '/empty_playlist.xml'}, {:width => 195, :height => 80}) %>
+<p id="player-container"><a href="http://www.macromedia.com/go/getflashplayer">Get the Flash Player</a> to see this player.</p>
+<script type="text/javascript">
+	var s1 = new SWFObject("/swf/mp3player.swf", "flash_player", "195", "60", "7");
+	s1.addVariable("enablejs", "true");
+	s1.write("player-container");
+</script>

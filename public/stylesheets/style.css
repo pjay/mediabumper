@@ -219,6 +219,10 @@ ul.search-results .controls {
   margin: 0 10px 10px;
 }
 
+#player-container {
+  margin: 10px 0 20px;
+}
+
 ul.search-results .inline-player {
   margin: 10px 5px 0 0;
   height: 100%;
