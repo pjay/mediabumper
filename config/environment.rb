@@ -1,7 +1,7 @@
 # Be sure to restart your web server when you modify this file.
 
 require 'rubygems'
-gem 'ferret', '= 0.10.14'
+gem 'ferret', '= 0.11.4'
 
 # Uncomment below to force Rails into production mode when 
 # you don't control web/app server and can't set it the proper way
