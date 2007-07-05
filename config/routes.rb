@@ -11,6 +11,8 @@ ActionController::Routing::Routes.draw do |map|
   
   map.resources :playlists, :albums
   
+  map.connect '/files/stream/:id/:filename', :controller => 'files', :action => 'stream', :filename => /.+/
+  
   # You can have the root of your site routed by hooking up '' 
   # -- just remember to delete public/index.html.
   map.connect '', :controller => 'home', :action => 'index'
