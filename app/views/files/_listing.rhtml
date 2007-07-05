@@ -8,7 +8,7 @@
                                :url => { :controller => 'playlists', :action => 'add',
                                          :id => current_playlist.id, :file_id => f.id } %>
         <% end %>
-        <%= inline_player :song_url => url_for_stream(f) %>
+        <%= link_to_function "play", player_event(:load, url_for_stream(f)) + ';' + player_event(:playpause) %>
       </span>
       <strong><%= h(f.song && f.song.name || f.basename) %></strong><% if f.artist %>, by <%= link_to h(f.artist.name) %><% end %>
       <% if f.album %>(album: <%= link_to h(f.album.name), album_path(f.album) %>)<% end %><br />
