@@ -10,10 +10,10 @@
       </ol>
       <p><%= link_to 'Play!', :controller => 'playlists', :action => 'play', :id => current_user.playlist.id %></p>
     <% else %>
-      <p><i>Your current playlist is empty. Drag files on this box to fill your
-        playlist!</i></p>
+      <p>Your current playlist is empty. Drag files on this box to fill your
+        playlist!</p>
     <% end %>
   <% else %>
-    <p><i>Please <%= link_to 'login', login_path %> to manage your playlists.</i></p>
+    <p>Please <%= link_to 'login', login_path %> to manage your playlists.</p>
   <% end %>
 </div>
