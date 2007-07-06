@@ -1,0 +1,12 @@
+WillPaginateFerret
+==================
+
+Adds a paginate_by_contents method to your ActiveRecord models with the same
+API as acts_as_ferret's find_by_contents but with an options hash that accepts
+the :page and :per_page parameters, as will_paginate's paginate* methods.
+
+You can use the helper will_paginate() with no change.
+
+Usage (in your controllers):
+
+@posts = Post.paginate_by_contents("search query", :page => params[:page])
