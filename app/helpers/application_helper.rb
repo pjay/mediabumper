@@ -24,16 +24,4 @@ module ApplicationHelper
     return unless current_user
     current_user.playlist || Playlist.new
   end
-  
-  def inline_player(options = {})
-    player_options = options.to_a.map { |a| a.join('=') }.join('&')
-    <<-EOC
-    <div class="inline-player">
-    <object type="application/x-shockwave-flash" data="/player/musicplayer.swf?#{player_options}" width="17" height="17">
-      <param name="movie" value="/player/musicplayer.swf#{player_options}" />
-      <img src="noflash.gif" width="17" height="17" alt="" />
-    </object>
-    </div>
-    EOC
-  end
 end
