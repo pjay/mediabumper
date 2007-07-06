@@ -10,25 +10,12 @@ class FilesController < ApplicationController
   end
   
   def search
-    if params[:q]
-      # Translate search query to FQL (see Ferret doc)
+    unless params[:q].blank?
+      # Translate search query to FQL fuzzy search (see Ferret doc)
       query = params[:q].strip.split(/ +/).map { |term| term << '~.5' }.join ' '
-      
-      begin
-        # Catch syntax errors in FQL
-        
-        # FIXME: upcoming release of acts_as_ferret will include a
-        #        MediaFile#total_hits method, use it when available
-        total_hits = MediaFile.ferret_index.search(query).total_hits
-        @search_pages = Paginator.new self, total_hits, SEARCH_PAGINATION_SIZE, params[:p]
-        
-        @files = MediaFile.find_by_contents query,
-          :limit => @search_pages.items_per_page,
-          :offset => @search_pages.current.offset
-      rescue
-        flash[:error] = "Error executing the query, please try again."
-        redirect_to :action => 'search'
-      end
+      @files = MediaFile.paginate_by_contents query, :page => (params[:page] || 1)
+    else
+      flash[:error] = "Please enter at least one search term."
     end
   end
   

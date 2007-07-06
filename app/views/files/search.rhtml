@@ -3,12 +3,8 @@
 <%= render :partial => 'shared/flash_messages' %>
 
 <% if @files %>
-  <p>Found <%= @files.total_hits %> result(s) for <i><%= h params[:q] %></i>
-    <% if @search_pages.page_count > 1 %>
-      <br />Displaying results <%= @search_pages.current.first_item %> to <%= @search_pages.current.last_item %>
-      <span class="pagination-links"><%= pagination_links @search_pages, :name => 'p', :params => { 'q' => params[:q] } %></span>
-    <% end %>
-  </p>
-  
+  <p>Found <%= @files.total_entries %> result(s) for <i><%= h params[:q] %></i></p>
+  <%= will_paginate @files %>
   <%= render :partial => 'files/listing' %>
+  <%= will_paginate @files %>
 <% end %>
