@@ -3,8 +3,7 @@
     <% current_path = '' %>
     <li class="<%= cycle('odd', 'even') %>">
       <span class="controls">
-        <%#= link_to_function "play", player_event(:load, url_for_stream(f)) + player_event(:playpause) %>
-        <%= link_to_function "play", "$('flash_player').loadFile({file:\"#{url_for_stream(f)}\"});" + player_event(:playpause) %>
+        <%= link_to_stream "play", f %>
         <% if logged_in? %>
           | <%= link_to_remote 'add to playlist',
                                :url => { :controller => 'playlists', :action => 'add',
