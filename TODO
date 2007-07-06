@@ -1,13 +1,13 @@
-* Create an interface to display/analyze playbacks history
-* Flagging/rating of files
-* Change ID3 library for a better one which provides general stream information,
+* create an interface to display/analyze playbacks history
+* flagging/rating of files
+* change ID3 library for a better one which provides general stream information,
   such as the bitrate, playtime, etc.
-* Add last_login_at attribute to users
-* Playlists controller should be RESTful - move all stream-related actions in
+* add last_login_at attribute to users
+* playlists controller should be RESTful - move all stream-related actions in
   a dedicated controller (play?)
-* Use track numbers for albums
-* Create an artists controller
-* Stream search results and random selections
-* Integration of a flash mp3 player to mediabumper
+* use track numbers for albums
+* create an artists controller
+* stream search results and random selections
 * possibility to play recursively a folder or a random selection
 * possibility to clear the playlist
+* one user may have multiple playlists
