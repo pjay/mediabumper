@@ -3,7 +3,7 @@ class FilesController < ApplicationController
     if params[:r]
       # FIXME: add path sanitization
       @repository    = Repository.find(params[:r])
-      @relative_path = params[:p]
+      @relative_path = params[:p] ? File.join(*params[:p]) : nil
     else
       @repositories = Repository.find :all
     end

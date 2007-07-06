@@ -1,35 +1,28 @@
 <% if @repositories %>
 
-<h2>Browse</h2>
+  <h2>Browse</h2>
 
-<p>Select the repository you would like to browse:</p>
-<ul>
-<% @repositories.each do |r| %>
-  <li><%= link_to(h(r.name), :action => 'browse', :r => r) %></li>
-<% end %>
-</ul>
+  <p>Select the repository you would like to browse:</p>
+  <ul>
+  <% @repositories.each do |r| %>
+    <li><%= link_to(h(r.name), :action => 'browse', :r => r) %></li>
+  <% end %>
+  </ul>
 
 <% else %>
 
-<h2>Browsing <%= h @repository.name %> :: <%= h @relative_path %></h2>
+  <h2>Browse</h2>
 
-<ul class="browse">
-<% if @relative_path %>
-  <li><%= link_to '^ go to parent', :r => @repository, :p => parent_dir(@relative_path) %></li>
-<% end %>
+  <p>Browsing <%= path_with_browse_links @repository, @relative_path %></p>
 
-<% files_in(@repository, @relative_path).each do |f| %>
-  <% path = @relative_path ? File.join(@repository.path, @relative_path, f) : File.join(@repository.path, f) %>
-  <% if File.directory? path %>
-    <% item_html = link_to h(f), :r => @repository, :p => @relative_path ? File.join(@relative_path, f) : f %>
-  <% elsif File.file?(path) && MediaFile::EXTENSIONS.include?(File.extname(path)) %>
-    <% relative_path = @relative_path ? File.join(@relative_path, f) : f %>
-    <% item_html = link_to h(f), :action => 'stream', :r => @repository, :p => relative_path %>
-  <% else %>
-    <% item_html = h(f) %>
-  <% end %>
-  <li class="<%= cycle('odd', 'even') %>"><%= item_html %></li>
-<% end %>
-</ul>
+  <ul class="browse">
+    <% if @relative_path %>
+      <li><%= link_to '^ go to parent', :r => @repository, :p => parent_dir(@relative_path) %></li>
+    <% end %>
+
+    <% files_in(@repository, @relative_path).each do |f| %>
+      <li class="<%= cycle('odd', 'even') %>"><%= directory_entry @repository, @relative_path, f %></li>
+    <% end %>
+  </ul>
 
 <% end %>

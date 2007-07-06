@@ -16,7 +16,10 @@ ActionController::Routing::Routes.draw do |map|
   map.login  '/login', :controller => 'sessions', :action => 'new'
   map.logout '/logout', :controller => 'sessions', :action => 'destroy'
   
-  map.connect '/files/stream/:id/:filename', :controller => 'files', :action => 'stream', :filename => /.+/
+  map.connect '/browse', :controller => 'files', :action => 'browse'
+  map.repository '/browse/:r', :controller => 'files', :action => 'browse'
+  map.browse '/browse/:r/*p', :controller => 'files', :action => 'browse'
+  map.connect '/stream/:r/*p', :controller => 'files', :action => 'stream'
   
   # You can have the root of your site routed by hooking up '' 
   # -- just remember to delete public/index.html.

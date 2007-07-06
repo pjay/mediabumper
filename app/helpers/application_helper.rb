@@ -13,7 +13,11 @@ module ApplicationHelper
   end
   
   def url_for_stream(streamable)
-    url_for :controller => 'files', :action => 'stream', :id => streamable, :filename => streamable.basename
+    if streamable.is_a? Hash
+      url_for :controller => 'files', :action => 'stream', :r => streamable[:r], :p => streamable[:p]
+    else
+      url_for :controller => 'files', :action => 'stream', :id => streamable, :filename => streamable.basename
+    end
   end
   
   def link_to_download(name, file_id)
