@@ -1,9 +1,0 @@
-<% if logged_in? %>
-  <h2>Welcome <%= current_user.login %>!</h2>
-  <p><%= link_to 'Logout', :controller => 'user', :action => 'logout' %></p>
-<% else %>
-  <h2>Welcome!</h2>
-  <p><%= link_to 'Login', :controller => 'user', :action => 'login' %> or
-    <%= link_to 'signup', :controller => 'user', :action => 'signup' %> to have
-    access to all the features!</p>
-<% end %>

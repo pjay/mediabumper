@@ -14,7 +14,6 @@
         playlist!</i></p>
     <% end %>
   <% else %>
-    <p><i>Please <%= link_to 'login', :controller => 'user', :action => 'login' %>
-      to manage your playlists.</i></p>
+    <p><i>Please <%= link_to 'login', login_path %> to manage your playlists.</i></p>
   <% end %>
 </div>

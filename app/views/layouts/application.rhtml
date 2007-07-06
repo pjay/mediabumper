@@ -17,7 +17,7 @@
 <p id="toplinks">Go to:
   <%= link_to 'search', :controller => 'files', :action => 'search' %> |
   <%= link_to 'browse', :controller => 'files', :action => 'browse' %> |
-  <%= link_to 'your profile', :controller => 'user', :action => 'profile' %></p>
+  <%= link_to 'your profile', :controller => 'users', :action => 'profile' %></p>
 <h1><%= link_to 'media<span class="fade">bumper</span>',
                 :controller => 'home', :action => 'index' %></h1>
 <p id="slogan">social media sharing</p>
@@ -28,7 +28,7 @@
 </div>
 
 <div id="sidebar">
-  <%= render :partial => 'user/sidebar' %>
+  <%= render :partial => 'users/sidebar' %>
   <%= render :partial => 'shared/player' %>
   <%= render :partial => 'files/quick_search' %>
   <%= render :partial => 'playlists/sidebar' %>
