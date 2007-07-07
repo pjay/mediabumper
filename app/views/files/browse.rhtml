@@ -1,28 +1,26 @@
+<h2>Browse</h2>
+
 <% if @repositories %>
-
-  <h2>Browse</h2>
-
+  
   <p>Select the repository you would like to browse:</p>
   <ul>
   <% @repositories.each do |r| %>
     <li><%= link_to(h(r.name), :action => 'browse', :r => r) %></li>
   <% end %>
   </ul>
-
+  
 <% else %>
-
-  <h2>Browse</h2>
-
+  
   <p>Browsing <%= path_with_browse_links @repository, @relative_path %></p>
-
+  
   <ul class="browse">
     <% if @relative_path %>
       <li><%= link_to '^ go to parent', :r => @repository, :p => parent_dir(@relative_path) %></li>
     <% end %>
-
+    
     <% files_in(@repository, @relative_path).each do |f| %>
       <li class="<%= cycle('odd', 'even') %>"><%= directory_entry @repository, @relative_path, f %></li>
     <% end %>
   </ul>
-
+  
 <% end %>
