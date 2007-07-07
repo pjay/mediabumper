@@ -4,12 +4,14 @@ module FilesHelper
   # are suppressed from the returned array as they usually are hidden or system
   # files.
   def files_in(repository, relative_path)
+    require 'natcmp'
+    
     path = repository.path
     if relative_path && !relative_path.empty?
       path = File.join(path, relative_path)
     end
     
-    Dir.entries(path).delete_if { |d| d =~ /^\./ }
+    Dir.entries(path).delete_if { |d| d =~ /^\./ }.sort { |a, b| String.natcmp(a, b) }
   end
   
   def parent_dir(path)
