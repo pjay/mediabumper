@@ -11,7 +11,7 @@ module FilesHelper
       path = File.join(path, relative_path)
     end
     
-    Dir.entries(path).delete_if { |d| d =~ /^\./ }.sort { |a, b| String.natcmp(a, b) }
+    Dir.entries(path).delete_if { |d| d =~ /^\./ }.sort { |a, b| String.natcmp(a, b, true) }
   end
   
   def parent_dir(path)
