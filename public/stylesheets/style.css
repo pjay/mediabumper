@@ -257,3 +257,13 @@ ul.search-results .file-path, ul.search-results .file-path * {
   color: #888;
   font-weight: normal;
 }
+
+ul.search-results .play-button-container {
+  float: left;
+  height: 36px;
+}
+
+ul.search-results .play-button-container img {
+  margin: 1px 5px;
+  vertical-align: middle;
+}

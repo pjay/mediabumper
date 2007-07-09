@@ -1,16 +1,15 @@
 <ul class="search-results">
   <% @files.each do |f| %>
-    <% current_path = '' %>
     <li class="<%= cycle('odd', 'even') %>">
+      <div class="play-button-container"><%= link_to_stream image_tag('icons/control_play_blue.png', :alt => "Play #{f.title}", :title => "Play"), f %></div>
       <span class="controls">
-        <%= link_to_stream "play", f %>
         <% if logged_in? %>
-          | <%= link_to_remote 'add to playlist',
-                               :url => { :controller => 'playlists', :action => 'add',
-                                         :id => current_playlist.id, :file_id => f.id } %>
+          <%= link_to_remote 'add to playlist',
+                             :url => { :controller => 'playlists', :action => 'add',
+                                       :id => current_playlist.id, :file_id => f.id } %>
         <% end %>
       </span>
-      <strong><%= h(f.song && f.song.name || f.basename) %></strong>
+      <strong><%= h f.title %></strong>
       <% if f.artist %>by <%= link_to h(f.artist.name) %><% end %>
       <% if f.album %>(album: <%= link_to h(f.album.name), album_path(f.album) %>)<% end %><br />
       <%= f.extname.upcase %> <%= number_to_human_size f.size %>
