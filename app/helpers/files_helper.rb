@@ -56,6 +56,6 @@ module FilesHelper
       end
     end
     
-    html.join(options[:separator])
+    html.join h(options[:separator])
   end
 end
