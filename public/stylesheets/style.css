@@ -248,3 +248,12 @@ ul.search-results .controls {
 #player-container {
   margin: 10px 0 20px;
 }
+
+ul.search-results .file-path {
+  margin-left: 4px;
+}
+
+ul.search-results .file-path, ul.search-results .file-path * {
+  color: #888;
+  font-weight: normal;
+}

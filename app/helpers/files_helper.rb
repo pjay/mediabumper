@@ -36,17 +36,26 @@ module FilesHelper
   # Given a repository and a path relative to the repository root, returns a
   # breadcrumb-like filesystem navigation with each directory being a link to
   # browse its content.
-  def path_with_browse_links(repository, relative_path)
-    current_path, links = Array.new, Array.new
+  #
+  # The options are:
+  #   * :separator: string to use as the file separator in output (default: " #{File::SEPARATOR} ")
+  def path_with_browse_links(repository, relative_path, options = {})
+    current_path, html = Array.new, Array.new
     
-    links << link_to(h(@repository.name), repository_path(:r => @repository.id))
-    return links unless relative_path
+    options[:separator] ||= " #{File::SEPARATOR} "
+    
+    html << link_to(h(repository.name), repository_path(:r => repository.id))
+    return html unless relative_path
     
     relative_path.split(File::SEPARATOR).each do |entry|
       current_path << entry
-      links << link_to(h(entry), browse_path(:r => repository, :p => current_path.join(File::SEPARATOR)))
+      html << if File.directory? File.join(repository.path, current_path)
+        link_to(h(entry), browse_path(:r => repository, :p => current_path.join(File::SEPARATOR)))
+      else
+        h(entry)
+      end
     end
     
-    links.join(" #{File::SEPARATOR} ")
+    html.join(options[:separator])
   end
 end
