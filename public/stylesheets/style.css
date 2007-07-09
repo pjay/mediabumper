@@ -210,6 +210,16 @@ ul.search-results .controls {
   float: right;
 }
 
+ul.browse .play-button-container {
+  float: left;
+  vertical-align: middle;
+}
+
+ul.browse .play-button-container img {
+  display: block;
+  margin: 2px;
+}
+
 .pagination {
   padding: 3px;
   margin: 10px 3px;

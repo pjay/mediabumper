@@ -27,7 +27,13 @@ module FilesHelper
       link_to h(file), :r => repository, :p => relative_path ? File.join(relative_path, file) : file
     elsif File.file?(path) && MediaFile::EXTENSIONS.include?(File.extname(path))
       real_relative_path = relative_path ? File.join(relative_path, file) : file
-      link_to_stream h(file), :r => repository, :p => real_relative_path
+      returning '' do |html|
+        html << content_tag(:div, :class => 'play-button-container') do
+          link_to_stream(image_tag('icons/control_play_blue.png', :alt => "Play #{h file}", :title => "Play"), :r => repository, :p => real_relative_path)
+        end
+        html << h(file)
+        html << content_tag(:div, '', :class => 'clear')
+      end
     else
       h(file)
     end
