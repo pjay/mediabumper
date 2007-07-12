@@ -1,0 +1,10 @@
+%h2 Random selection
+
+- form_tag({}, :method => :get) do
+  %p
+    Display
+    = select_tag 's', options_for_select(['10', '20', '50', '100'], session[:random_selection_size])
+    files
+    = submit_tag 'refresh'
+
+= render :partial => 'files/listing'

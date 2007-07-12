@@ -1,0 +1,3 @@
+%h2 Quick search
+- form_tag({ :controller => 'files', :action => 'search' }, :method => :get) do
+  %p= text_field_tag :q, params[:q]

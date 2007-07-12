@@ -1,9 +1,0 @@
-<% if logged_in? %>
-  <h2>Welcome <%= current_user.login %>!</h2>
-  <p><%= link_to 'Logout', logout_path %></p>
-<% else %>
-  <h2>Welcome!</h2>
-  <p><%= link_to 'Login', login_path %> or
-    <%= link_to 'signup', signup_path %> to have
-    access to all the features!</p>
-<% end %>

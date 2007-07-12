@@ -1,0 +1,13 @@
+#playlist-sidebar
+  %h2 Your playlist
+  - if logged_in?
+    - if current_playlist.media_files.size > 0
+      %ol
+        - current_user.playlist.media_files.each do |f|
+          %li{:id => "media-file-#{f.id}", :class => cycle('odd', 'even')}
+            = h truncate(f.basename, 25)
+      %p= link_to 'Play!', :controller => 'playlists', :action => 'play', :id => current_user.playlist.id
+    - else
+      %p Your current playlist is empty. Drag files on this box to fill your playlist!
+  - else
+    %p== Please #{link_to 'login', login_path} to manage your playlists.

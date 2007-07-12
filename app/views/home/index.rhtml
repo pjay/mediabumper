@@ -1,8 +1,0 @@
-<h2>Welcome to mediabumper!</h2>
-
-<h3>Latest files added:</h3>
-<ul>
-  <% @recent.each do |f| %>
-    <li><%= f.created_at %> <%= link_to_stream h(f.basename), f %></li>
-  <% end %>
-</ul>

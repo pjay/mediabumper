@@ -1,0 +1,18 @@
+%h2 Browse
+
+- if @repositories
+  %p Select the repository you would like to browse:
+  %ul
+    - @repositories.each do |r|
+      %li= link_to(h(r.name), :action => 'browse', :r => r)
+- else  
+  %p
+    Browsing
+    = path_with_browse_links @repository, @relative_path
+  
+  %ul.browse
+    - if @relative_path
+      %li= link_to '^ go to parent', :r => @repository, :p => parent_dir(@relative_path)
+    - files_in(@repository, @relative_path).each do |f|
+      %li{:class => cycle('odd', 'even')}
+        = directory_entry @repository, @relative_path, f

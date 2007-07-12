@@ -1,0 +1,10 @@
+- if logged_in?
+  %h2== Welcome #{h current_user.login}!
+  %p= link_to 'Logout', logout_path
+- else
+  %h2 Welcome!
+  %p
+    = link_to 'Login', login_path
+    or
+    = link_to 'signup', signup_path
+    to have access to all the features!

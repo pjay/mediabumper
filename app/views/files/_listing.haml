@@ -1,0 +1,16 @@
+%ul.search-results
+  - @files.each do |f|
+    %li{:class => cycle('odd', 'even')}
+      .play-button-container= link_to_stream image_tag('icons/control_play_blue.png', :alt => "Play #{f.title}", :title => "Play"), f
+      %span.controls
+        - if logged_in?
+          = link_to_remote 'add to playlist', :url => { :controller => 'playlists', :action => 'add', :id => current_playlist.id, :file_id => f.id }
+      %strong= h f.title
+      - if f.artist
+        == by #{link_to h(f.artist.name)}
+      - if f.album
+        == (album: #{link_to h(f.album.name), album_path(f.album)})
+      %br/
+      = f.extname.upcase
+      = number_to_human_size f.size
+      %span.file-path= path_with_browse_links(f.repository, f.relative_path, :separator => '/')

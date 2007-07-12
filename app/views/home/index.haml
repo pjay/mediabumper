@@ -1,0 +1,8 @@
+%h2 Welcome to mediabumper!
+
+%h3 Latest files added:
+%ul
+  - @recent.each do |f|
+    %li
+      = f.created_at
+      = link_to_stream h(f.basename), f

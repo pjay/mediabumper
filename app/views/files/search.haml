@@ -1,0 +1,13 @@
+%h2 Search
+
+= render :partial => 'shared/flash_messages'
+
+- if @files
+  %p
+    Found
+    = @files.total_entries
+    result(s) for
+    %i= h params[:q]
+  = will_paginate @files
+  = render :partial => 'files/listing'
+  = will_paginate @files
