@@ -11,3 +11,4 @@
 * possibility to play recursively a folder or a random selection
 * possibility to clear the playlist
 * one user may have multiple playlists
+* fetch music infos from an external service (choose one)
