@@ -28,8 +28,9 @@ class MediaFile < ActiveRecord::Base
       end
     end
     
-    def recent(limit)
-      find(:all, :order => 'created_at DESC', :limit => limit)
+    def recent(options = {})
+      find_options = { :order => 'created_at DESC' }.update(options)
+      find(:all, find_options)
     end
   end
   

@@ -1,5 +1,5 @@
 class HomeController < ApplicationController
   def index
-    @recent = MediaFile.recent(10)
+    @recent = MediaFile.recent(:limit => 10)
   end
 end
