@@ -1,0 +1,22 @@
+xml.instruct!
+xml.playlist 'version' => '1', :xmlns => 'http://xspf.org/ns/0/' do
+  xml.trackList do
+    @files.each do |file|
+      xml.track do
+        unless file.title.blank?
+          xml.title file.title
+        else
+          xml.title "Unknown title"
+        end
+        if file.artist && !file.artist.name.blank?
+          xml.creator file.artist.name
+        else
+          xml.creator "Unknown artist"
+        end
+        # xml.location url_for :controller => 'files', :action => 'stream', :id => file.id, :_session_id => session.session_id, :only_path => false
+        xml.location url_for :controller => 'files', :action => 'stream', :id => file.id, :only_path => false
+        xml.meta('mp3', :rel => 'type')
+      end
+    end
+  end
+end

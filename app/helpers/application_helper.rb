@@ -1,7 +1,7 @@
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
   def link_to_playlist(name, streamable)
-    link_to name, url_for_playlist(streamable)
+    link_to_function name, "$('flash_player').loadFile({file:\"#{url_for_playlist(streamable)}\"});" + player_event(:playpause)
   end
   
   def url_for_playlist(streamable)

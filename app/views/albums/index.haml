@@ -1,0 +1,8 @@
+%h2 Albums
+
+%ul
+  - @albums.each do |album|
+    %li
+      = link_to h(album.name), album_path(album)
+      by
+      = link_to h(album.artist.name), artist_path(album.artist)

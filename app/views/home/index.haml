@@ -1,8 +1,17 @@
 %h2 Welcome to mediabumper!
 
-%h3 Latest files added:
+%h3 Latest files
 %ul
-  - @recent.each do |f|
+  - @recent_files.each do |f|
     %li
       = f.created_at
-      = link_to_stream h(f.basename), f
+      = link_to_playlist h(f.basename), f
+
+%h3 Latest albums
+%ul
+  - @recent_albums.each do |a|
+    %li
+      = a.created_at
+      = link_to_playlist h(a.name), a
+      by
+      = link_to h(a.artist.name), artist_path(a.artist)

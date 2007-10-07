@@ -1,4 +1,17 @@
-*SVN*
+*1.13.4* (October 4th, 2007)
+
+* Only accept session ids from cookies, prevents session fixation attacks.  [bradediger]
+
+* Change the resource seperator from ; to / change the generated routes to use the new-style named routes.  e.g.  new_group_user_path(@group) instead of group_new_user_path(@group). [pixeltrix]
+
+* Integration tests: introduce methods for other HTTP methods.  #6353 [caboose]
+
+* Improve performance of action caching. Closes #8231 [skaes]
+
+* Fix errors with around_filters which do not yield, restore 1.1 behaviour with after filters. Closes #8891 [skaes]
+
+  After filters will *no longer* be run if an around_filter fails to yield, users relying on
+  this behaviour are advised to put the code in question after a yield statement in an around filter.
 
 * Allow you to delete cookies with options. Closes #3685 [josh, Chris Wanstrath]
 
@@ -13,8 +26,6 @@
 * observe_form always sends the serialized form.  #5271 [manfred, normelton@gmail.com]
 
 * Update UrlWriter to accept :anchor parameter. Closes #6771. [octopod]
-
-* Fixed that content_tag with a block will just return the result instead of concate it if not used in a ERb view #7857, #7432 [michael.niessner]
 
 * Replace the current block/continuation filter chain handling by an implementation based on a simple loop.  Closes #8226 [Stefan Kaes]
 

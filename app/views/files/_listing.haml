@@ -7,7 +7,7 @@
           = link_to_remote 'add to playlist', :url => { :controller => 'playlists', :action => 'add', :id => current_playlist.id, :file_id => f.id }
       %strong= h f.title
       - if f.artist
-        == by #{link_to h(f.artist.name)}
+        == by #{link_to h(f.artist.name), artist_path(f.artist)}
       - if f.album
         == (album: #{link_to h(f.album.name), album_path(f.album)})
       %br/

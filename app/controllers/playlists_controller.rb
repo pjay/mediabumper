@@ -1,16 +1,17 @@
 class PlaylistsController < ApplicationController
   before_filter :login_required, :only => [:add]
-  
+  layout nil
+
   def media_file
     @files = [MediaFile.find(params[:id])]
     play
   end
-  
+
   def album
-    @files = Album.find(params[:id]).songs.map { |s| s.media_file }
+    @files = Album.find(params[:id]).songs.map(&:media_file)
     play
   end
-  
+
   def add
     respond_to do |format|
       format.js do
@@ -20,7 +21,7 @@ class PlaylistsController < ApplicationController
         PlaylistsItem.create(:playlist_id => current_user.playlist.id,
                              :media_file_id => f.id,
                              :position => pos)
-        
+
         render :update do |page|
           page.replace 'playlist-sidebar', :partial => 'playlists/sidebar'
           page.visual_effect :highlight, "media-file-#{f.id}"
@@ -28,10 +29,10 @@ class PlaylistsController < ApplicationController
       end
     end
   end
-  
+
   def play
     @files ||= Playlist.find(params[:id]).media_files
-    response.headers['Content-Type'] = 'audio/x-scpls'
-    render :action => 'play', :layout => false
+    response.headers['Content-Type'] = 'application/xspf+xml'
+    render :action => 'xspf'
   end
 end

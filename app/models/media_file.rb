@@ -9,9 +9,10 @@ class MediaFile < ActiveRecord::Base
   
   class << self
     def index(path, repository)
-      if self::EXTENSIONS.include? File.extname(path)
+      if self::EXTENSIONS.include?(File.extname(path).downcase)
         relative_path = path.sub /^#{repository.path}#{File::SEPARATOR}/, ''
         mf = find_by_relative_path_and_repository_id(relative_path, repository.id)
+        
         unless mf
           tags = Mediabumper::TaggedFile.new path
           
@@ -20,9 +21,11 @@ class MediaFile < ActiveRecord::Base
             new_mf = MediaFile.create :relative_path => relative_path,
               :repository_id => repository.id, :size => File.size(path),
               :bitrate => 0, :duration => 0
-            artist = Artist.find_or_create_by_name(tags.artist) if tags.artist
-            album = Album.find_or_create_by_artist_id_and_name(artist.id, tags.album) if tags.album
-            Song.create(:name => tags.title, :artist => artist, :album => album, :media_file => new_mf) if tags.title
+            if !tags.artist.blank? && !tags.album.blank? && !tags.title.blank?
+              artist = Artist.find_or_create_by_name(tags.artist)
+              album = Album.find_or_create_by_artist_id_and_name(artist.id, tags.album)
+              Song.create(:name => tags.title, :artist => artist, :album => album, :media_file => new_mf)
+            end
           end
         end
       end
