@@ -13,3 +13,5 @@
 * one user may have multiple playlists
 * fetch music infos from an external service (choose one)
 * interface with audioscrobbler
+* create an abstraction for filetypes support
+* write specs
