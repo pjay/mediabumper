@@ -12,6 +12,6 @@
   - @recent_albums.each do |a|
     %li
       = a.created_at
-      = link_to_playlist h(a.name), a
+      = link_to h(a.name), album_path(a)
       by
       = link_to h(a.artist.name), artist_path(a.artist)
