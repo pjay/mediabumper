@@ -1,9 +1,9 @@
-standard_dirs = ['rails', 'plugins']
-gems          = Dir[File.join(RAILS_ROOT, "vendor/**")]
+# standard_dirs = ['rails', 'plugins']
+gems          = Dir[File.join(RAILS_ROOT, "vendor/gems/**")]
 
 if gems.any?
   gems.each do |dir|
-    next if standard_dirs.include?(File.basename(dir))
+    # next if standard_dirs.include?(File.basename(dir))
     lib = File.join(dir, 'lib')
     if File.directory?(lib)
       $LOAD_PATH.unshift(lib) 

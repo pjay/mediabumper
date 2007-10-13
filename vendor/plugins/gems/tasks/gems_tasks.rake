@@ -16,10 +16,10 @@ namespace :gems do
     end
 
     target_dir = ENV['TO'] || File.basename(path).sub(/\.gem$/, '')
-    rm_rf "vendor/#{target_dir}"
+    rm_rf "vendor/gems/#{target_dir}"
     
-    chdir File.join(RAILS_ROOT, 'vendor') do
-      target_dir = File.expand_path(target_dir, File.join(RAILS_ROOT, 'vendor'))
+    chdir File.join(RAILS_ROOT, 'vendor', 'gems') do
+      target_dir = File.expand_path(target_dir, File.join(RAILS_ROOT, 'vendor', 'gems'))
       mkdir_p target_dir
       Gem::Installer.new(path).unpack(target_dir)
       puts "Unpacked #{gem_name} #{version} to '#{target_dir}'"
@@ -28,6 +28,6 @@ namespace :gems do
 
   task :unfreeze do
     raise "No gem specified" unless gem_name = ENV['GEM']
-    Dir["vendor/#{gem_name}-*"].each { |d| rm_rf d }
+    Dir["vendor/gems/#{gem_name}-*"].each { |d| rm_rf d }
   end
 end
