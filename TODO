@@ -14,4 +14,6 @@
 * fetch music infos from an external service (choose one)
 * interface with audioscrobbler
 * create an abstraction for filetypes support
-* write specs
+* write specs (rspec)
+* clean and improve the indexer
+* upgrade to rails 2.0
