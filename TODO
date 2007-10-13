@@ -1,7 +1,5 @@
 * create an interface to display/analyze playbacks history
 * flagging/rating of files
-* change ID3 library for a better one which provides general stream information,
-  such as the bitrate, playtime, etc.
 * add last_login_at attribute to users
 * playlists controller should be RESTful - move all stream-related actions in
   a dedicated controller (play?)

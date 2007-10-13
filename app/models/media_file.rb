@@ -20,7 +20,7 @@ class MediaFile < ActiveRecord::Base
           MediaFile.transaction do
             new_mf = MediaFile.create :relative_path => relative_path,
               :repository_id => repository.id, :size => File.size(path),
-              :bitrate => 0, :duration => 0
+              :bitrate => tags.bitrate, :duration => tags.length.round, :vbr => tags.vbr
             if !tags.artist.blank? && !tags.album.blank? && !tags.title.blank?
               artist = Artist.find_or_create_by_name(tags.artist)
               album = Album.find_or_create_by_artist_id_and_name(artist.id, tags.album)
