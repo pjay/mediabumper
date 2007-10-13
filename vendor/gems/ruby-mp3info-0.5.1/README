@@ -1,0 +1,28 @@
+= Description
+ruby-mp3info gives you access to low level informations on mp3 files
+(bitrate, length, samplerate, etc...). It can read, write, remove id3v1 and
+id3v2 tags. It is written in pure ruby.
+
+
+= Download
+
+ get tar.gz at
+ http://rubyforge.org/projects/ruby-mp3info/
+
+
+= Installation
+
+ $ ruby install.rb config
+ $ ruby install.rb setup
+ # ruby install.rb install
+
+or
+
+ # gem install ruby-mp3info
+
+
+= Todo
+
+* encoder detection
+* support for more tags in id3v2
+* generalize id3v2 with other audio formats (APE, MPC, OGG, etc...)
