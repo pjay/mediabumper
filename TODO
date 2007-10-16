@@ -10,7 +10,7 @@
 * possibility to clear the playlist
 * one user may have multiple playlists
 * fetch music infos from an external service (choose one)
-* interface with audioscrobbler
+* audioscrobbler submissions (http://www.audioscrobbler.net/development/protocol/)
 * create an abstraction for filetypes support
 * write specs (rspec)
 * clean and improve the indexer
