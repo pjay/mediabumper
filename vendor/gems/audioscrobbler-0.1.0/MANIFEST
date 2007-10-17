@@ -1,0 +1,9 @@
+audioscrobbler.gemspec
+COPYING
+INSTALL
+lib/audioscrobbler.rb
+MANIFEST
+README
+setup.rb
+test/test_audioscrobbler.rb
+test/test_queue.rb

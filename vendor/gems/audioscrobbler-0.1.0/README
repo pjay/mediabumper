@@ -1,0 +1,6 @@
+This package contains an Audioscrobbler class for Ruby that implements the
+Audioscrobbler plugin protocol, used to submit playlist history to Last.fm.
+The INSTALL file contains installation instructions.
+
+Daniel Erat <dan-ruby@erat.org>
+http://www.erat.org/ruby/
