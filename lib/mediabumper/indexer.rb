@@ -17,7 +17,11 @@ module Mediabumper
           if File.directory? fullpath
             dirs << fullpath
           else
-            MediaFile.index(fullpath, @repository)
+            begin
+              MediaFile.index(fullpath, @repository)
+            rescue Exception => e
+              puts "ERROR: cannot index '#{fullpath}': #{e.message}"
+            end
           end
         end
       end
