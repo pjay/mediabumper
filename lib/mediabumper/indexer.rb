@@ -13,6 +13,7 @@ module Mediabumper
           next if f.index('.') == 0  # Skip files/dirs beginning with a dot
 
           fullpath = File.join(dir, f)
+          next unless test(?r, fullpath) # Skip files/dirs that are not readable
 
           if File.directory? fullpath
             dirs << fullpath
