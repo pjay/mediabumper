@@ -5,7 +5,7 @@
   a dedicated controller (play?)
 * use track numbers for albums
 * create an artists controller
-* stream search results and random selections
+* add control to play search results and random selections
 * possibility to play recursively a folder or a random selection
 * possibility to clear the playlist
 * one user may have multiple playlists
@@ -15,3 +15,5 @@
 * write specs (rspec)
 * clean and improve the indexer
 * upgrade to rails 2.0
+* search for artists, albums, songs, etc.
+* handle songs lyrics (automate fetching?)
