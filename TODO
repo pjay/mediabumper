@@ -1,5 +1,5 @@
 * create an interface to display/analyze playbacks history
-* flagging/rating of files
+* flagging/rating of songs
 * add last_login_at attribute to users
 * playlists controller should be RESTful - move all stream-related actions in
   a dedicated controller (play?)
@@ -17,3 +17,6 @@
 * upgrade to rails 2.0
 * search for artists, albums, songs, etc.
 * handle songs lyrics (automate fetching?)
+* tagging of artists and tags navigation
+* popup player with configuration (repeat all, etc.)
+* add an abstraction for filesystem access that handles charset conversions
